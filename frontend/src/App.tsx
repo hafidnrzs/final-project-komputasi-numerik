@@ -1,43 +1,53 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./Home";
+import { Helmet } from "react-helmet";
 import Turunan from "./math/turunan";
 import Integrasi from "./math/integral";
 import { Navbar1 } from "./components/navbar1";
 
 const App = () => {
   return (
-    <Router>
-      <div className="w-full flex items-center justify-center flex-col">
-        <Navbar1 />
+    <>
+      <Helmet>
+        <title>Komputasi Numerik</title>
+        <meta
+          name="description"
+          content="Aplikasi Komputasi Numerik untuk menghitung turunan dan integral numerik."
+        />
+      </Helmet>
+      <Router>
+        <div className="w-full flex items-center justify-center flex-col">
+          <Navbar1 />
 
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <Home className="flex flex-col w-full max-w-7xl mx-auto items-center justify-center" />
-            }
-          />
-          <Route
-            path="/turunan"
-            element={
-              <Turunan className="flex flex-col w-full max-w-7xl mx-auto items-center justify-center" />
-            }
-          />
-          <Route
-            path="/integrasi"
-            element={
-              <Integrasi className="flex flex-col w-full max-w-7xl mx-auto items-center justify-center" />
-            }
-          />
-          <Route
-            path="*"
-            element={
-              <NotFound className="flex flex-col w-full max-w-7xl mx-auto items-center justify-center" />
-            }
-          />
-        </Routes>
-      </div>
-    </Router>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <Home className="flex flex-col w-full max-w-7xl mx-auto items-center justify-center" />
+              }
+            />
+            <Route
+              path="/turunan"
+              element={
+                <Turunan className="flex flex-col w-full max-w-7xl mx-auto items-center justify-center" />
+              }
+            />
+            <Route
+              path="/integrasi"
+              element={
+                <Integrasi className="flex flex-col w-full max-w-7xl mx-auto items-center justify-center" />
+              }
+            />
+            <Route
+              path="*"
+              element={
+                <NotFound className="flex flex-col w-full max-w-7xl mx-auto items-center justify-center" />
+              }
+            />
+          </Routes>
+        </div>
+      </Router>
+    </>
   );
 };
 
