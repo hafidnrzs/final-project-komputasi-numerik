@@ -1,5 +1,5 @@
 import numpy as np
-from sympy import integrate, Symbol
+from sympy import integrate, diff, Symbol
 
 x = Symbol("x")
 
@@ -199,3 +199,98 @@ def simpson_integral(
     result = h / 3 * (f_0 + iter_result + f_n)
 
     return round(result, 3)
+
+
+def hitung_error_persen(hasil_numerik, hasil_analitik):
+    """
+    Menghitung nilai error dalam perhitunga metode numerik dalam persen
+
+    Args:
+        numerik (float): Hasil dari perhitungan metode numerik
+        analitik (float): Hasil dari perhitungan metode analitik
+
+    Returns:
+        float: Nilai error dalam persen
+    """
+    hasil_error = abs((hasil_numerik - hasil_analitik) / hasil_analitik)
+    return round(hasil_error, 4)
+
+
+def selisih_maju(fungsi_str: str, x: float, h: float, np_alias=np):
+    """
+    Menghitung turunan fungsi dengan Metode Selisih Maju
+
+    Args:
+        fungsi_str (str): Fungsi sebagai string
+        x (float): Nilai x dari fungsi
+        h (float): Ukuran langkah (step size)
+
+    Returns:
+        float: Nilai numerik
+    """
+    result = (
+        eval_func(fungsi_str, x + h, np_alias) - eval_func(fungsi_str, x, np_alias)
+    ) / h
+    return round(result, 3)
+
+
+def selisih_tengahan(fungsi_str: str, x: float, h: float, np_alias=np):
+    """
+    Menghitung turunan fungsi dengan Metode Selisih Tengahan
+
+    Args:
+        fungsi_str (str): Fungsi sebagai string
+        x (float): Nilai x dari fungsi
+        h (float): Ukuran langkah (step size)
+
+    Returns:
+        float: Nilai numerik
+    """
+    result = (
+        eval_func(fungsi_str, x + h, np_alias) - eval_func(fungsi_str, x - h, np_alias)
+    ) / (2 * h)
+    return round(result, 3)
+
+
+def selisih_mundur(fungsi_str: str, x: float, h: float, np_alias=np):
+    """
+    Menghitung turunan fungsi dengan Metode Selisih Mundur
+
+    Args:
+        fungsi_str (str): Fungsi sebagai string
+        x (float): Nilai x dari fungsi
+        h (float): Ukuran langkah (step size)
+
+    Returns:
+        float: Nilai numerik
+    """
+    result = (
+        eval_func(fungsi_str, x, np_alias) - eval_func(fungsi_str, x - h, np_alias)
+    ) / h
+    return round(result, 3)
+
+
+def turunan_analitik(fungsi_str: str, nilai_x: float):
+    """
+    Menghitung turunan secara analitik menggunakan sympy.
+
+    Args:
+        fungsi_str (str): Fungsi sebagai string
+        nilai_x (float): Nilai x dimana turunan akan dihitung
+
+    Returns:
+        float: Hasil turunan analitik yang sudah dievaluasi
+
+    Raises:
+        ValueError: Jika fungsi tidak bisa diturunkan secara analitik
+    """
+    try:
+        turunan = diff(fungsi_str, x)
+        hasil_analitik = turunan.subs(x, nilai_x)
+
+        # Konversi ke float dan bulatkan
+        if hasattr(hasil_analitik, "evalf"):
+            return round(float(hasil_analitik.evalf()), 3)
+        return round(float(hasil_analitik), 3)
+    except Exception as e:
+        raise ValueError(f"Gagal menghitung turunan analitik: {str(e)}")
