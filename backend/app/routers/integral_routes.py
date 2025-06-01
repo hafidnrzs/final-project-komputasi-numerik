@@ -1,31 +1,18 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field, model_validator
 from typing import Optional, Any
 import numpy as np
-
-from numerical_methods import (
-    hitung_h,
-    cara_analitik,
-    hitung_error,
-    hitung_error_persen,
+from services.utils import hitung_error, hitung_h
+from services.integral_module import (
     riemann_integral,
     trapezoida_integral,
     simpson_integral,
-    selisih_maju,
-    selisih_tengahan,
-    selisih_mundur,
-    turunan_analitik,
-)
-
-app = FastAPI(
-    title="API Metode Numerik",
-    description="API untuk menyelesaikan berbagai metode numerik.",
-    version="0.1.0",
+    integral_analitik,
 )
 
 
-# Validasi input
-class NumericalInput(BaseModel):
+# Validasi input untuk metode integral
+class IntegralInput(BaseModel):
     fungsi: str = Field(
         ...,
         example="x**2 - np.exp(x)",
@@ -100,36 +87,12 @@ class NumericalInput(BaseModel):
         }
 
 
-# Validasi input untuk metode turunan
-class DerivativeInput(BaseModel):
-    fungsi: str = Field(
-        ...,
-        example="x**2 - np.exp(x)",
-        description="Fungsi matematika sebagai string. Gunakan 'np.' untuk fungsi NumPy (misal np.sin, np.exp). Variabel yang diizinkan adalah 'x'.",
-    )
-    x: float = Field(
-        ..., example=1.0, description="Nilai x dimana turunan akan dihitung."
-    )
-    h: float = Field(
-        ...,
-        example=0.1,
-        gt=0,
-        description="Ukuran langkah (step size). Harus lebih besar dari 0.",
-    )
-
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "fungsi": "x**2",
-                "x": 1.0,
-                "h": 0.1,
-            }
-        }
-
-
 # --- Endpoints ---
-@app.post("/metode/integrasi-riemann/", tags=["Metode Numerik"])
-async def solve_riemann_integral(data: NumericalInput):
+router = APIRouter()
+
+
+@router.post("/metode/integrasi-riemann/", tags=["Metode Numerik"])
+async def solve_riemann_integral(data: IntegralInput):
     """
     Menjalankan metode numerik Integral Riemann yang mengevaluasi fungsi
     pada interval [batas_bawah, batas_atas] dengan langkah h.
@@ -154,7 +117,7 @@ async def solve_riemann_integral(data: NumericalInput):
             np_alias=np,
         )
         try:
-            hasil_analitik = cara_analitik(
+            hasil_analitik = integral_analitik(
                 data.fungsi, data.batas_bawah, data.batas_atas
             )
             error = hitung_error(hasil_numerik, hasil_analitik)
@@ -180,8 +143,8 @@ async def solve_riemann_integral(data: NumericalInput):
         )
 
 
-@app.post("/metode/integrasi-trapezoida/", tags=["Metode Numerik"])
-async def solve_trapezoida_integral(data: NumericalInput):
+@router.post("/metode/integrasi-trapezoida/", tags=["Metode Numerik"])
+async def solve_trapezoida_integral(data: IntegralInput):
     """
     Menjalankan metode numerik Integral Trapezoida yang mengevaluasi fungsi
     pada interval [batas_bawah, batas_atas] dengan N tertentu.
@@ -206,7 +169,7 @@ async def solve_trapezoida_integral(data: NumericalInput):
             np_alias=np,
         )
         try:
-            hasil_analitik = cara_analitik(
+            hasil_analitik = integral_analitik(
                 data.fungsi, data.batas_bawah, data.batas_atas
             )
             error = hitung_error(hasil_numerik, hasil_analitik)
@@ -232,8 +195,8 @@ async def solve_trapezoida_integral(data: NumericalInput):
         )
 
 
-@app.post("/metode/integrasi-simpson/", tags=["Metode Numerik"])
-async def solve_simpson_integral(data: NumericalInput):
+@router.post("/metode/integrasi-simpson/", tags=["Metode Numerik"])
+async def solve_simpson_integral(data: IntegralInput):
     """
     Menjalankan metode numerik Integral Simspon yang mengevaluasi fungsi
     pada interval [batas_bawah, batas_atas] dengan N tertentu.
@@ -258,7 +221,7 @@ async def solve_simpson_integral(data: NumericalInput):
             np_alias=np,
         )
         try:
-            hasil_analitik = cara_analitik(
+            hasil_analitik = integral_analitik(
                 data.fungsi, data.batas_bawah, data.batas_atas
             )
             error = hitung_error(hasil_numerik, hasil_analitik)
@@ -282,110 +245,3 @@ async def solve_simpson_integral(data: NumericalInput):
         raise HTTPException(
             status_code=500, detail=f"Terjadi kesalahan internal server: {str(e)}"
         )
-
-
-@app.post("/metode/selisih-maju/", tags=["Metode Numerik"])
-async def solve_selisih_maju(data: DerivativeInput):
-    """
-    Menghitung turunan fungsi dengan Metode Selisih Maju pada titik x dengan ukuran langkah h.
-    """
-    try:
-        hasil_numerik = selisih_maju(data.fungsi, data.x, data.h, np_alias=np)
-        try:
-            hasil_analitik = turunan_analitik(data.fungsi, data.x)
-            error = hitung_error_persen(hasil_numerik, hasil_analitik)
-
-            return {
-                "metode": "Selisih Maju",
-                "hasil_numerik": hasil_numerik,
-                "hasil_analitik": hasil_analitik,
-                "error": f"{error * 100}%",
-            }
-        except ValueError as e:
-            return {
-                "metode": "Selisih Maju",
-                "hasil_numerik": hasil_numerik,
-                "message": f"Turunan analitik tidak dapat dihitung: {str(e)}",
-            }
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        print(f"Error tidak terduga di solve_selisih_maju: {e}")
-        raise HTTPException(
-            status_code=500, detail=f"Terjadi kesalahan internal server: {str(e)}"
-        )
-
-
-@app.post("/metode/selisih-tengahan/", tags=["Metode Numerik"])
-async def solve_selisih_tengahan(data: DerivativeInput):
-    """
-    Menghitung turunan fungsi dengan Metode Selisih Tengahan pada titik x dengan ukuran langkah h.
-    """
-    try:
-        hasil_numerik = selisih_tengahan(data.fungsi, data.x, data.h, np_alias=np)
-        try:
-            hasil_analitik = turunan_analitik(data.fungsi, data.x)
-            error = hitung_error_persen(hasil_numerik, hasil_analitik)
-
-            return {
-                "metode": "Selisih Tengahan",
-                "hasil_numerik": hasil_numerik,
-                "hasil_analitik": hasil_analitik,
-                "error": f"{error * 100}%",
-            }
-        except ValueError as e:
-            return {
-                "metode": "Selisih Tengahan",
-                "hasil_numerik": hasil_numerik,
-                "message": f"Turunan analitik tidak dapat dihitung: {str(e)}",
-            }
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        print(f"Error tidak terduga di solve_selisih_tengahan: {e}")
-        raise HTTPException(
-            status_code=500, detail=f"Terjadi kesalahan internal server: {str(e)}"
-        )
-
-
-@app.post("/metode/selisih-mundur/", tags=["Metode Numerik"])
-async def solve_selisih_mundur(data: DerivativeInput):
-    """
-    Menghitung turunan fungsi dengan Metode Selisih Mundur pada titik x dengan ukuran langkah h.
-    """
-    try:
-        hasil_numerik = selisih_mundur(data.fungsi, data.x, data.h, np_alias=np)
-        try:
-            hasil_analitik = turunan_analitik(data.fungsi, data.x)
-            error = hitung_error_persen(hasil_numerik, hasil_analitik)
-            return {
-                "metode": "Selisih Mundur",
-                "hasil_numerik": hasil_numerik,
-                "hasil_analitik": hasil_analitik,
-                "error": f"{error * 100}%",
-            }
-        except ValueError as e:
-            return {
-                "metode": "Selisih Mundur",
-                "hasil_numerik": hasil_numerik,
-                "message": f"Turunan analitik tidak dapat dihitung: {str(e)}",
-            }
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        print(f"Error tidak terduga di solve_selisih_mundur: {e}")
-        raise HTTPException(
-            status_code=500, detail=f"Terjadi kesalahan internal server: {str(e)}"
-        )
-
-
-# --- Endpoint Health Check ---
-@app.get("/", tags=["Health Check"])
-async def health_check():
-    """
-    Endpoint root untuk informasi API.
-    """
-    return {
-        "message": "Selamat datang di API Metode Numerik!",
-        "status": "healthy",
-    }
