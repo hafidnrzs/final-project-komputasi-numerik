@@ -51,32 +51,7 @@ const MathInput = ({ onChange, initialLatex }: MathInputProps) => {
 
   useEffect(() => {
     handleChange(mathFieldRef.current);
-  }, [
-    latex,
-    mathFieldRef.current,
-    handleChange,
-    setLatex,
-    filterMathInput,
-    isFocused,
-    wrapperRef,
-    handleWrapperClick,
-    addStyles,
-    EditableMathField,
-    Button,
-    Textarea,
-    useState,
-    useRef,
-    useEffect,
-    addStyles,
-    filterMathInput,
-    handleChange,
-    handleWrapperClick,
-    setIsFocused,
-    setLatex,
-    latex,
-    mathFieldRef,
-    wrapperRef,
-  ]);
+  }, [initialLatex, mathFieldRef]);
 
   return (
     <div className="space-y-4">
@@ -177,16 +152,7 @@ const MathInput = ({ onChange, initialLatex }: MathInputProps) => {
           </ul>
         </div>
         <div className="">
-          <Button
-            variant={"default"}
-            onClick={() => {
-              if (mathFieldRef.current) {
-                const currentLatex = mathFieldRef.current.latex();
-                alert(`Ekspresi LaTeX: ${currentLatex}`);
-              }
-            }}
-            type="submit"
-          >
+          <Button variant={"default"} type="submit">
             Hitung
           </Button>
         </div>

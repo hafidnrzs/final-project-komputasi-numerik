@@ -65,7 +65,7 @@ API ini menggunakan format input LaTex untuk fungsi matematika:
 curl -X POST "http://127.0.0.1:8000/metode/selisih-maju/" \
 -H "Content-Type: application/json" \
 -d '{
-    "fungsi": "x^2",
+    "fungsi": "\\frac{1}{2}x^2+3x+4",
     "x": 1.0,
     "h": 0.1
 }'

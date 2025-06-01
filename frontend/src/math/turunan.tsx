@@ -1,7 +1,8 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import React from "react";
+import React, { type FormEventHandler } from "react";
 import { MathInput } from "./text-editor";
+import axios from "axios";
 import { Helmet } from "react-helmet";
 
 const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
@@ -10,12 +11,22 @@ const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
     h: "",
     a: "",
     b: "",
-    function: "x^5 + \\frac{1}{2}x^3 - 4",
+    fungsi: "x^5 + \\frac{1}{2}x^3 - 4",
   });
 
-  const handleSubmit = () => {
+  const handleSubmit: FormEventHandler = (e) => {
+    e.preventDefault();
     // Handle form submission logic here
-    console.log("Form submitted with data:", data);
+    axios
+      .post("http://127.0.0.1:8000/metode/selisih-maju/", data)
+      .then((response) => {
+        console.log("Response from server:", response.data);
+        // You can handle the response data here, e.g., display results or update state
+      })
+      .catch((error) => {
+        console.error("Error submitting form:", error);
+        // Handle error here, e.g., show an error message
+      });
   };
 
   return (
@@ -94,7 +105,6 @@ const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
                 className="w-full"
                 autoComplete="off"
                 autoFocus
-                required
                 value={data.a}
                 onChange={(e) => setData({ ...data, a: e.target.value })}
               />
@@ -114,7 +124,6 @@ const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
                 className="w-full"
                 autoComplete="off"
                 autoFocus
-                required
                 value={data.b}
                 onChange={(e) => setData({ ...data, b: e.target.value })}
               />
@@ -122,9 +131,7 @@ const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
           </div>
           <div className="gap-2 flex-col w-full">
             <MathInput
-              onChange={(value: string) =>
-                setData({ ...data, function: value })
-              }
+              onChange={(value: string) => setData({ ...data, fungsi: value })}
             />
           </div>
         </form>
