@@ -1,4 +1,7 @@
 import numpy as np
+from sympy import integrate, Symbol
+
+x = Symbol("x")
 
 
 def eval_func(fungsi_str: str, x: float, np_alias=np):
@@ -37,6 +40,32 @@ def eval_func(fungsi_str: str, x: float, np_alias=np):
         )
 
 
+def cara_analitik(fungsi_str, batas_bawah, batas_atas):
+    """
+    Menghitung integral secara analitik menggunakan sympy.
+
+    Args:
+        fungsi_str (str): Fungsi sebagai string
+        batas_bawah (float): Batas bawah integral
+        batas_atas (float): Batas atas integral
+
+    Returns:
+        float: Hasil integral analitik yang sudah dievaluasi
+
+    Raises:
+        ValueError: Jika fungsi tidak bisa diintegrasikan secara analitik
+    """
+    try:
+        hasil_integral = integrate(fungsi_str, (x, batas_bawah, batas_atas))
+
+        # Evaluasi hasil ke nilai numerik
+        if hasattr(hasil_integral, "evalf"):
+            return round(float(hasil_integral.evalf()), 3)
+        return round(float(hasil_integral), 3)
+    except Exception as e:
+        raise ValueError(f"Gagal menghitung integral analitik: {str(e)}")
+
+
 def hitung_error(numerik: float, analitik: float):
     """
     Menghitung nilai error dalam perhitunga metode numerik
@@ -48,7 +77,8 @@ def hitung_error(numerik: float, analitik: float):
     Returns:
         float: Nilai error
     """
-    return abs(numerik - analitik)
+    hasil_error = abs(numerik - analitik)
+    return round(hasil_error, 3)
 
 
 def hitung_h(batas_bawah: float, batas_atas: float, N: int):
@@ -92,8 +122,9 @@ def riemann_integral(
     while i <= batas_atas:
         iter_result += eval_func(fungsi_str, i, np_alias)
         i += h
+    result = h * iter_result
 
-    return h * iter_result
+    return round(result, 3)
 
 
 def trapezoida_integral(
@@ -126,8 +157,9 @@ def trapezoida_integral(
     while i < batas_atas:
         iter_result += eval_func(fungsi_str, i)
         i += h
+    result = h / 2 * (f_0 + 2 * iter_result + f_n)
 
-    return h / 2 * (f_0 + 2 * iter_result + f_n)
+    return round(result, 3)
 
 
 def simpson_integral(
@@ -164,5 +196,6 @@ def simpson_integral(
         else:
             iter_result += 4 * eval_func(fungsi_str, i)
         i += h
+    result = h / 3 * (f_0 + iter_result + f_n)
 
-    return h / 3 * (f_0 + iter_result + f_n)
+    return round(result, 3)

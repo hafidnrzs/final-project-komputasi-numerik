@@ -5,6 +5,8 @@ import numpy as np
 
 from numerical_methods import (
     hitung_h,
+    cara_analitik,
+    hitung_error,
     riemann_integral,
     trapezoida_integral,
     simpson_integral,
@@ -119,10 +121,24 @@ async def solve_riemann_integral(data: NumericalInput):
             data.batas_atas,
             np_alias=np,
         )
-        return {
-            "metode": "Integrasi Riemann",
-            "hasil_numerik": hasil_numerik,
-        }
+        try:
+            hasil_analitik = cara_analitik(
+                data.fungsi, data.batas_bawah, data.batas_atas
+            )
+            error = hitung_error(hasil_numerik, hasil_analitik)
+
+            return {
+                "metode": "Integrasi Riemann",
+                "hasil_numerik": hasil_numerik,
+                "hasil_analitik": hasil_analitik,
+                "error": error,
+            }
+        except ValueError as e:
+            return {
+                "metode": "Integrasi Riemann",
+                "hasil_numerik": hasil_numerik,
+                "pesan": f"Integral analitik tidak dapat dihitung: {str(e)}",
+            }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
@@ -157,10 +173,24 @@ async def solve_trapezoida_integral(data: NumericalInput):
             data.batas_atas,
             np_alias=np,
         )
-        return {
-            "metode": "Integrasi Trapezoida",
-            "hasil_numerik": hasil_numerik,
-        }
+        try:
+            hasil_analitik = cara_analitik(
+                data.fungsi, data.batas_bawah, data.batas_atas
+            )
+            error = hitung_error(hasil_numerik, hasil_analitik)
+
+            return {
+                "metode": "Integrasi Trapezoida",
+                "hasil_numerik": hasil_numerik,
+                "hasil_analitik": hasil_analitik,
+                "error": error,
+            }
+        except ValueError as e:
+            return {
+                "metode": "Integrasi Riemann",
+                "hasil_numerik": hasil_numerik,
+                "pesan": f"Integral analitik tidak dapat dihitung: {str(e)}",
+            }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
@@ -195,10 +225,24 @@ async def solve_simpson_integral(data: NumericalInput):
             data.batas_atas,
             np_alias=np,
         )
-        return {
-            "metode": "Integrasi Simpson",
-            "hasil_numerik": hasil_numerik,
-        }
+        try:
+            hasil_analitik = cara_analitik(
+                data.fungsi, data.batas_bawah, data.batas_atas
+            )
+            error = hitung_error(hasil_numerik, hasil_analitik)
+
+            return {
+                "metode": "Integrasi Simpson",
+                "hasil_numerik": hasil_numerik,
+                "hasil_analitik": hasil_analitik,
+                "error": error,
+            }
+        except ValueError as e:
+            return {
+                "metode": "Integrasi Riemann",
+                "hasil_numerik": hasil_numerik,
+                "pesan": f"Integral analitik tidak dapat dihitung: {str(e)}",
+            }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
