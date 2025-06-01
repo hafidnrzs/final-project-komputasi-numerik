@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field, model_validator
 from typing import Optional, Any
 import numpy as np
-from services.utils import hitung_error, hitung_h
+from services.utils import hitung_error, hitung_h, parse_latex_to_python
 from services.integral_module import (
     riemann_integral,
     trapezoida_integral,
@@ -15,8 +15,8 @@ from services.integral_module import (
 class IntegralInput(BaseModel):
     fungsi: str = Field(
         ...,
-        example="x**2 - np.exp(x)",
-        description="Fungsi matematika sebagai string. Gunakan 'np.' untuk fungsi NumPy (misal np.sin, np.exp). Variabel yang diizinkan adalah 'x'.",
+        example="x^2",
+        description="Fungsi matematika sederhana. Gunakan ^ untuk pangkat, frac{a}{b} untuk pecahan. Contoh: x^2, frac{1}{x}, sin(x)",
     )
     batas_bawah: float = Field(
         ..., example=0.0, description="Batas bawah interval atau iterasi."
@@ -68,7 +68,7 @@ class IntegralInput(BaseModel):
                 {
                     "summary": "Contoh dengan h",
                     "value": {
-                        "fungsi": "x**3 - 2*x + 5",
+                        "fungsi": "x^3 - 2x + 5",
                         "h": 0.05,
                         "batas_bawah": -2.0,
                         "batas_atas": 2.0,
@@ -77,10 +77,10 @@ class IntegralInput(BaseModel):
                 {
                     "summary": "Contoh dengan N",
                     "value": {
-                        "fungsi": "np.sin(x)",
+                        "fungsi": "sin(x)",
                         "N": 20,
                         "batas_bawah": 0.0,
-                        "batas_atas": np.pi,
+                        "batas_atas": 4.0,
                     },
                 },
             ]
@@ -109,8 +109,9 @@ async def solve_riemann_integral(data: IntegralInput):
         )
 
     try:
+        fungsi_python = parse_latex_to_python(data.fungsi)
         hasil_numerik = riemann_integral(
-            data.fungsi,
+            fungsi_python,
             data.h,
             data.batas_bawah,
             data.batas_atas,
@@ -161,8 +162,9 @@ async def solve_trapezoida_integral(data: IntegralInput):
         )
 
     try:
+        fungsi_python = parse_latex_to_python(data.fungsi)
         hasil_numerik = trapezoida_integral(
-            data.fungsi,
+            fungsi_python,
             data.N,
             data.batas_bawah,
             data.batas_atas,
@@ -182,7 +184,7 @@ async def solve_trapezoida_integral(data: IntegralInput):
             }
         except ValueError as e:
             return {
-                "metode": "Integrasi Riemann",
+                "metode": "Integrasi Trapezoida",
                 "hasil_numerik": hasil_numerik,
                 "pesan": f"Integral analitik tidak dapat dihitung: {str(e)}",
             }
@@ -213,8 +215,9 @@ async def solve_simpson_integral(data: IntegralInput):
         )
 
     try:
+        fungsi_python = parse_latex_to_python(data.fungsi)
         hasil_numerik = simpson_integral(
-            data.fungsi,
+            fungsi_python,
             data.N,
             data.batas_bawah,
             data.batas_atas,
@@ -234,7 +237,7 @@ async def solve_simpson_integral(data: IntegralInput):
             }
         except ValueError as e:
             return {
-                "metode": "Integrasi Riemann",
+                "metode": "Integrasi Simpson",
                 "hasil_numerik": hasil_numerik,
                 "pesan": f"Integral analitik tidak dapat dihitung: {str(e)}",
             }

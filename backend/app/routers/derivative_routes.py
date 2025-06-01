@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 import numpy as np
-from services.utils import hitung_error_persen
+from services.utils import hitung_error_persen, parse_latex_to_python
 from services.derivative_module import (
     selisih_maju,
     selisih_mundur,
@@ -14,8 +14,8 @@ from services.derivative_module import (
 class DerivativeInput(BaseModel):
     fungsi: str = Field(
         ...,
-        example="x**2 - np.exp(x)",
-        description="Fungsi matematika sebagai string. Gunakan 'np.' untuk fungsi NumPy (misal np.sin, np.exp). Variabel yang diizinkan adalah 'x'.",
+        example="x^2 - e^x",
+        description="Fungsi matematika dalam format LaTeX (tanpa $ $). Variabel yang diizinkan adalah 'x'",
     )
     x: float = Field(
         ..., example=1.0, description="Nilai x dimana turunan akan dihitung."
@@ -30,7 +30,7 @@ class DerivativeInput(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
-                "fungsi": "x**2",
+                "fungsi": "x^2",
                 "x": 1.0,
                 "h": 0.1,
             }
@@ -47,7 +47,8 @@ async def solve_selisih_maju(data: DerivativeInput):
     Menghitung turunan fungsi dengan Metode Selisih Maju pada titik x dengan ukuran langkah h.
     """
     try:
-        hasil_numerik = selisih_maju(data.fungsi, data.x, data.h, np_alias=np)
+        fungsi_python = parse_latex_to_python(data.fungsi)
+        hasil_numerik = selisih_maju(fungsi_python, data.x, data.h, np_alias=np)
         try:
             hasil_analitik = turunan_analitik(data.fungsi, data.x)
             error = hitung_error_persen(hasil_numerik, hasil_analitik)
@@ -79,7 +80,8 @@ async def solve_selisih_tengahan(data: DerivativeInput):
     Menghitung turunan fungsi dengan Metode Selisih Tengahan pada titik x dengan ukuran langkah h.
     """
     try:
-        hasil_numerik = selisih_tengahan(data.fungsi, data.x, data.h, np_alias=np)
+        fungsi_python = parse_latex_to_python(data.fungsi)
+        hasil_numerik = selisih_tengahan(fungsi_python, data.x, data.h, np_alias=np)
         try:
             hasil_analitik = turunan_analitik(data.fungsi, data.x)
             error = hitung_error_persen(hasil_numerik, hasil_analitik)
@@ -111,7 +113,8 @@ async def solve_selisih_mundur(data: DerivativeInput):
     Menghitung turunan fungsi dengan Metode Selisih Mundur pada titik x dengan ukuran langkah h.
     """
     try:
-        hasil_numerik = selisih_mundur(data.fungsi, data.x, data.h, np_alias=np)
+        fungsi_python = parse_latex_to_python(data.fungsi)
+        hasil_numerik = selisih_mundur(fungsi_python, data.x, data.h, np_alias=np)
         try:
             hasil_analitik = turunan_analitik(data.fungsi, data.x)
             error = hitung_error_persen(hasil_numerik, hasil_analitik)

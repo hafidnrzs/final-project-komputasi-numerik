@@ -1,4 +1,41 @@
 import numpy as np
+from sympy.parsing.latex import parse_latex
+import re
+
+
+def parse_latex_to_python(latex_str: str) -> str:
+    """
+    Mengkonversi ekspresi LaTeX ke ekspresi Python yang valid.
+
+    Args:
+        latex_str (str): Ekspresi matematika dalam format LaTeX.
+
+    Returns:
+        str: Ekspresi matematika dalam format Python.
+
+    Raises:
+        ValueError: Jika ekspresi LaTeX tidak valid atau tidak dapat dikonversi.
+    """
+    try:
+        latex_str = latex_str.strip("$")
+        sympy_expr = parse_latex(latex_str)
+        python_str = str(sympy_expr)
+        replacements = {
+            "sin": "np.sin",
+            "cos": "np.cos",
+            "tan": "np.tan",
+            "exp": "np.exp",
+            "log": "np.log",
+            "sqrt": "np.sqrt",
+            "pi": "np.pi",
+            "e": "np.e",
+        }
+
+        for old, new in replacements.items():
+            python_str = re.sub(r"\b" + old + r"\b", new, python_str)
+        return python_str
+    except Exception as e:
+        raise ValueError(f"Error saat mengurai ekspresi LaTeX: {str(e)}")
 
 
 def eval_func(fungsi_str: str, x: float, np_alias=np):
@@ -25,10 +62,10 @@ def eval_func(fungsi_str: str, x: float, np_alias=np):
             "e": np_alias.e,
         }
         return eval(fungsi_str, {"__builtins__": {}}, allowed_names)
-    except NameError as e:
-        raise ValueError(
-            f"Error: Nama tidak dikenal dalam fungsi: {e}. Pastikan menggunakan hanya variabel 'x'."
-        )
+    # except NameError as e:
+    #     raise ValueError(
+    #         f"Error: Nama tidak dikenal dalam fungsi: {e}. Pastikan menggunakan hanya variabel 'x'."
+    #     )
     except SyntaxError as e:
         raise ValueError(f"Error: Kesalahan sintaks dalam fungsi: {e}")
     except Exception as e:

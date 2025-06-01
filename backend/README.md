@@ -14,9 +14,7 @@ Proyek ini merupakan implementasi berbagai metode numerik untuk menyelesaikan pe
 - Metode Trapezoida
 - Metode Simpson
 
-## Prasyarat
-
-- Python >= 3.8
+Terakhir diuji menggunakan Python 3.8
 
 ## Instalasi
 
@@ -54,14 +52,20 @@ uvicorn main:app --reload
 
 Server akan berjalan di `http://127.0.0.1:8000`
 
-### Contoh Penggunaan API
+## Format Input Fungsi Matematika
+
+API ini menggunakan format input LaTex untuk fungsi matematika:
+   - Tulis fungsi dalam notasi LaTeX tanpa tanda dollar ($)
+   - Contoh: `x^2 + \sin(x)`, `\frac{1}{x} + e^x`
+
+## Contoh Penggunaan API
 
 1. Menghitung Turunan dengan Metode Selisih Maju:
 ```bash
 curl -X POST "http://127.0.0.1:8000/metode/selisih-maju/" \
 -H "Content-Type: application/json" \
 -d '{
-    "fungsi": "x**2",
+    "fungsi": "x^2",
     "x": 1.0,
     "h": 0.1
 }'
@@ -72,7 +76,7 @@ curl -X POST "http://127.0.0.1:8000/metode/selisih-maju/" \
 curl -X POST "http://127.0.0.1:8000/metode/integrasi-riemann/" \
 -H "Content-Type: application/json" \
 -d '{
-    "fungsi": "x**2",
+    "fungsi": "x^2",
     "h": 0.1,
     "batas_bawah": 0.0,
     "batas_atas": 1.0
