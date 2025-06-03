@@ -52,33 +52,15 @@ uvicorn main:app --reload
 
 Server akan berjalan di `http://127.0.0.1:8000`
 
+Setelah server berjalan, dokumentasi API lengkap dapat dibuka melalui Swagger UI di:
+```
+http://127.0.0.1:8000/docs
+```
+
+Dokumentasi ini menyediakan deskripsi lengkap semua endpoint yang tersedia, request body yang diperlukan, dan dapat mencoba API secara langsung melalui antarmuka web yang interaktif.
+
 ## Format Input Fungsi Matematika
 
 API ini menggunakan format input LaTex untuk fungsi matematika:
    - Tulis fungsi dalam notasi LaTeX tanpa tanda dollar ($)
-   - Contoh: `x^2 + \sin(x)`, `\frac{1}{x} + e^x`
-
-## Contoh Penggunaan API
-
-1. Menghitung Turunan dengan Metode Selisih Maju:
-```bash
-curl -X POST "http://127.0.0.1:8000/metode/selisih-maju/" \
--H "Content-Type: application/json" \
--d '{
-    "fungsi": "\\frac{1}{2}x^2+3x+4",
-    "x": 1.0,
-    "h": 0.1
-}'
-```
-
-2. Menghitung Integral dengan Metode Riemann:
-```bash
-curl -X POST "http://127.0.0.1:8000/metode/integrasi-riemann/" \
--H "Content-Type: application/json" \
--d '{
-    "fungsi": "x^2",
-    "h": 0.1,
-    "batas_bawah": 0.0,
-    "batas_atas": 1.0
-}'
-```
+   - Contoh: `x^2`, `\frac{1}{x} + e^x`

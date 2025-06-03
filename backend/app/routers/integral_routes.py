@@ -1,7 +1,8 @@
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, Field, model_validator
-from typing import Optional, Any
+from fastapi import APIRouter, HTTPException, Form
+from pydantic import BaseModel
+from typing import Optional
 import numpy as np
+
 from services.utils import hitung_error, hitung_h, parse_latex_to_python
 from services.integral_module import (
     riemann_integral,
@@ -10,241 +11,137 @@ from services.integral_module import (
     integral_analitik,
 )
 
-
-# Validasi input untuk metode integral
-class IntegralInput(BaseModel):
-    fungsi: str = Field(
-        ...,
-        example="x^2",
-        description="Fungsi matematika sederhana. Gunakan ^ untuk pangkat, frac{a}{b} untuk pecahan. Contoh: x^2, frac{1}{x}, sin(x)",
-    )
-    batas_bawah: float = Field(
-        ..., example=0.0, description="Batas bawah interval atau iterasi."
-    )
-    batas_atas: float = Field(
-        ..., example=1.0, description="Batas atas interval atau iterasi."
-    )
-    h: Optional[float] = Field(
-        default=None,
-        example=0.1,
-        description="Ukuran langkah (step size). Opsional jika N disediakan.",
-    )
-    N: Optional[int] = Field(
-        default=None,
-        example=10,
-        ge=1,
-        description="Jumlah sub-interval. Opsional jika h disediakan. Harus bilangan bulat positif.",
-    )
-
-    @model_validator(mode="after")
-    def check_h_or_n_exclusive(cls, values: Any) -> Any:
-        h_val = values.h
-        n_val = values.N
-        batas_bawah_val = values.batas_bawah
-        batas_atas_val = values.batas_atas
-
-        if h_val is None and n_val is None:
-            raise ValueError("Salah satu dari 'h' atau 'N' wajib disediakan.")
-
-        if n_val is not None:
-            try:
-                calculated_h = hitung_h(batas_bawah_val, batas_atas_val, n_val)
-                if calculated_h == 0:
-                    raise ValueError(
-                        "Kombinasi batas_bawah, batas_atas, dan N menghasilkan h = 0, yang tidak valid."
-                    )
-                values.h = calculated_h
-            except ValueError as e:
-                raise ValueError(str(e))
-
-        if h_val is not None and h_val == 0:
-            raise ValueError("Ukuran langkah (h) tidak boleh nol.")
-
-        return values
-
-    class Config:
-        json_schema_extra = {
-            "examples": [
-                {
-                    "summary": "Contoh dengan h",
-                    "value": {
-                        "fungsi": "x^3 - 2x + 5",
-                        "h": 0.05,
-                        "batas_bawah": -2.0,
-                        "batas_atas": 2.0,
-                    },
-                },
-                {
-                    "summary": "Contoh dengan N",
-                    "value": {
-                        "fungsi": "sin(x)",
-                        "N": 20,
-                        "batas_bawah": 0.0,
-                        "batas_atas": 4.0,
-                    },
-                },
-            ]
-        }
+# --- Router Setup ---
+router = APIRouter(prefix="/integral", tags=["Metode Numerik Integral"])
 
 
-# --- Endpoints ---
-router = APIRouter()
+# --- Response Model ---
+class IntegralCalcResponse(BaseModel):
+    metode: str
+    input_fungsi: str
+    input_batas_bawah: float
+    input_batas_atas: float
+    input_h: Optional[float] = None
+    input_N: Optional[int] = None
+    hasil_numerik: float
+    hasil_analitik: Optional[float] = None
+    error_relatif: Optional[str] = None
 
 
-@router.post("/metode/integrasi-riemann/", tags=["Metode Numerik"])
-async def solve_riemann_integral(data: IntegralInput):
+# --- Endpoint ---
+@router.post("/", response_model=IntegralCalcResponse)
+async def solve_integral_form(
+    fungsi_latex: str = Form(
+        description="Fungsi matematika dalam format LaTex. Contoh: 'x =^2', '\\frac{1}{x+1}'"
+    ),
+    batas_bawah: float = Form(description="Batas bawah interval integrasi."),
+    batas_atas: float = Form(description="Batas atas interval integrasi."),
+    metode: str = Form(
+        description="Metode integrasi yang akan digunakan: 'riemann', 'trapezoida', 'simpson"
+    ),
+    h_step: Optional[float] = Form(
+        None,
+        alias="h",
+        description="Ukuran langkah (step size). Diperlukan untuk metode Riemann. Jika N disediakan untuk metode lain, h akan dihitung",
+    ),
+    N_segments: Optional[int] = Form(
+        None,
+        alias="N",
+        description="Jumlah sub-interval/segmen. Diperlukan untuk metode Trapezoida dan Simpson",
+        ge=1,  # N >= 1
+    ),
+):
     """
-    Menjalankan metode numerik Integral Riemann yang mengevaluasi fungsi
-    pada interval [batas_bawah, batas_atas] dengan langkah h.
+    Menghitung integral dari suatu fungsi menggunakan metode numerik yang dipilih.
     """
-    if data.h <= 0:
-        raise HTTPException(
-            status_code=400, detail="Ukuran langkah (h) tidak boleh nol atau negatif."
-        )
 
-    if data.h > 0 and data.batas_bawah > data.batas_atas:
-        raise HTTPException(
-            status_code=400,
-            detail="batas_bawah harus lebih kecil dari batas_atas.",
-        )
+    # Validasi untuk input h atau N
+    current_h = h_step
+    current_N = N_segments
 
-    try:
-        fungsi_python = parse_latex_to_python(data.fungsi)
-        hasil_numerik = riemann_integral(
-            fungsi_python,
-            data.h,
-            data.batas_bawah,
-            data.batas_atas,
-            np_alias=np,
-        )
-        try:
-            hasil_analitik = integral_analitik(
-                data.fungsi, data.batas_bawah, data.batas_atas
+    if batas_bawah > batas_atas:
+        batas_bawah, batas_atas = batas_atas, batas_bawah
+
+    if metode in ["trapezoida", "simpson"]:
+        if current_N is None:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Parameter 'N' wajib diisi untuk metode {metode}.",
             )
-            error = hitung_error(hasil_numerik, hasil_analitik)
-
-            return {
-                "metode": "Integrasi Riemann",
-                "hasil_numerik": hasil_numerik,
-                "hasil_analitik": hasil_analitik,
-                "error": error,
-            }
-        except ValueError as e:
-            return {
-                "metode": "Integrasi Riemann",
-                "hasil_numerik": hasil_numerik,
-                "pesan": f"Integral analitik tidak dapat dihitung: {str(e)}",
-            }
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        print(f"Error tidak terduga di solve_riemann_integral: {e}")
-        raise HTTPException(
-            status_code=500, detail=f"Terjadi kesalahan internal server: {str(e)}"
-        )
-
-
-@router.post("/metode/integrasi-trapezoida/", tags=["Metode Numerik"])
-async def solve_trapezoida_integral(data: IntegralInput):
-    """
-    Menjalankan metode numerik Integral Trapezoida yang mengevaluasi fungsi
-    pada interval [batas_bawah, batas_atas] dengan N tertentu.
-    """
-    if data.N <= 0:
-        raise HTTPException(
-            status_code=400, detail="Jumlah segmen (N) tidak boleh nol atau negatif."
-        )
-
-    if data.batas_bawah > data.batas_atas:
-        raise HTTPException(
-            status_code=400,
-            detail="batas_bawah harus lebih kecil dari batas_atas.",
-        )
-
-    try:
-        fungsi_python = parse_latex_to_python(data.fungsi)
-        hasil_numerik = trapezoida_integral(
-            fungsi_python,
-            data.N,
-            data.batas_bawah,
-            data.batas_atas,
-            np_alias=np,
-        )
         try:
-            hasil_analitik = integral_analitik(
-                data.fungsi, data.batas_bawah, data.batas_atas
-            )
-            error = hitung_error(hasil_numerik, hasil_analitik)
-
-            return {
-                "metode": "Integrasi Trapezoida",
-                "hasil_numerik": hasil_numerik,
-                "hasil_analitik": hasil_analitik,
-                "error": error,
-            }
+            current_h = hitung_h(batas_bawah, batas_atas, current_N)
+            if current_h <= 0:
+                raise ValueError(
+                    "Ukuran langkah 'h' (step size) harus lebih besar dari 0"
+                )
         except ValueError as e:
-            return {
-                "metode": "Integrasi Trapezoida",
-                "hasil_numerik": hasil_numerik,
-                "pesan": f"Integral analitik tidak dapat dihitung: {str(e)}",
-            }
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        print(f"Error tidak terduga di solve_trapezoida_integral: {e}")
-        raise HTTPException(
-            status_code=500, detail=f"Terjadi kesalahan internal server: {str(e)}"
-        )
+            raise HTTPException(status_code=400, detail=str(e))
+    elif metode == "riemann":
+        if current_h is None:
+            raise HTTPException(
+                status_code=400,
+                detail="Parameter 'h' wajib diisi untuk metode Riemann.",
+            )
+        if current_h <= 0:
+            raise HTTPException(
+                status_code=400,
+                detail="Ukuran langkah 'h' (step size) harus lebih besar dari 0",
+            )
 
-
-@router.post("/metode/integrasi-simpson/", tags=["Metode Numerik"])
-async def solve_simpson_integral(data: IntegralInput):
-    """
-    Menjalankan metode numerik Integral Simspon yang mengevaluasi fungsi
-    pada interval [batas_bawah, batas_atas] dengan N tertentu.
-    """
-    if data.N <= 0:
-        raise HTTPException(
-            status_code=400, detail="Jumlah segmen (N) tidak boleh nol atau negatif."
-        )
-
-    if data.batas_bawah > data.batas_atas:
-        raise HTTPException(
-            status_code=400,
-            detail="batas_bawah harus lebih kecil dari batas_atas.",
-        )
-
+    # Parsing fungsi LaTeX ke ekspresi Python
     try:
-        fungsi_python = parse_latex_to_python(data.fungsi)
-        hasil_numerik = simpson_integral(
-            fungsi_python,
-            data.N,
-            data.batas_bawah,
-            data.batas_atas,
-            np_alias=np,
-        )
-        try:
-            hasil_analitik = integral_analitik(
-                data.fungsi, data.batas_bawah, data.batas_atas
-            )
-            error = hitung_error(hasil_numerik, hasil_analitik)
-
-            return {
-                "metode": "Integrasi Simpson",
-                "hasil_numerik": hasil_numerik,
-                "hasil_analitik": hasil_analitik,
-                "error": error,
-            }
-        except ValueError as e:
-            return {
-                "metode": "Integrasi Simpson",
-                "hasil_numerik": hasil_numerik,
-                "pesan": f"Integral analitik tidak dapat dihitung: {str(e)}",
-            }
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        fungsi_python = parse_latex_to_python(fungsi_latex)
     except Exception as e:
-        print(f"Error tidak terduga di solve_simpson_integral: {e}")
         raise HTTPException(
-            status_code=500, detail=f"Terjadi kesalahan internal server: {str(e)}"
+            status_code=400, detail=f"Gagal mem-parsing fungsi LaTeX: {str(e)}"
         )
+
+    hasil_numerik = 0.0
+
+    # Pemilihan metode dan perhitungan
+    try:
+        if metode == "riemann":
+            hasil_numerik = riemann_integral(
+                fungsi_python, current_h, batas_bawah, batas_atas, np_alias=np
+            )
+        elif metode == "trapezoida":
+            hasil_numerik = trapezoida_integral(
+                fungsi_python, current_N, batas_bawah, batas_atas, np_alias=np
+            )
+        elif metode == "simpson":
+            hasil_numerik = simpson_integral(
+                fungsi_python, current_N, batas_bawah, batas_atas, np_alias=np
+            )
+
+        # Hitung metode analitik dan cari error
+        try:
+            error_relatif = None
+            hasil_analitik = integral_analitik(fungsi_python, batas_bawah, batas_atas)
+            error_relatif = hitung_error(hasil_numerik, hasil_analitik)
+        except ValueError as ve_analitik:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Integral analitik tidak dapat dihitung: {str(ve_analitik)}",
+            )
+
+        return IntegralCalcResponse(
+            metode=metode,
+            input_fungsi=fungsi_latex,
+            input_batas_bawah=batas_bawah,
+            input_batas_atas=batas_atas,
+            input_h=current_h
+            if metode == "riemann"
+            or (metode in ["trapezoida", "simpson"] and current_N is not None)
+            else None,
+            input_N=current_N if metode in ["trapezoida", "simpson"] else None,
+            hasil_numerik=hasil_numerik,
+            hasil_analitik=hasil_analitik,
+            error_relatif=str(error_relatif),
+        )
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except HTTPException:
+        raise
+    except Exception:
+        # print(f"Error tidak terduga di solve_integral_form: {e}")
+        raise HTTPException(status_code=500, detail="Terjadi kesalahan di server.")
