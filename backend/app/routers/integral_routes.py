@@ -31,23 +31,24 @@ class IntegralCalcResponse(BaseModel):
 # --- Endpoint ---
 @router.post("/", response_model=IntegralCalcResponse)
 async def solve_integral_form(
+    metode: str = Form(
+        description="Metode integrasi numerik yang akan digunakan: _riemann_, _trapezoida_, _simpson_."
+    ),
     fungsi_latex: str = Form(
-        description="Fungsi matematika dalam format LaTex. Contoh: 'x =^2', '\\frac{1}{x+1}'"
+        description="Fungsi matematika dalam format LaTex. Contoh: _x^2_ atau _\\frac{1}{2}x_"
     ),
     batas_bawah: float = Form(description="Batas bawah interval integrasi."),
     batas_atas: float = Form(description="Batas atas interval integrasi."),
-    metode: str = Form(
-        description="Metode integrasi yang akan digunakan: 'riemann', 'trapezoida', 'simpson"
-    ),
     h_step: Optional[float] = Form(
         None,
         alias="h",
-        description="Ukuran langkah (step size). Diperlukan untuk metode Riemann. Jika N disediakan untuk metode lain, h akan dihitung",
+        description="Ukuran langkah (step size). Diperlukan untuk metode _riemann_. Jika N disediakan untuk metode lain, h akan dihitung",
+        gt=0,  # h > 0
     ),
     N_segments: Optional[int] = Form(
         None,
         alias="N",
-        description="Jumlah sub-interval/segmen. Diperlukan untuk metode Trapezoida dan Simpson",
+        description="Jumlah sub-interval/segmen. Diperlukan untuk metode _trapezoida_ dan _simpson_.",
         ge=1,  # N >= 1
     ),
 ):
@@ -115,7 +116,6 @@ async def solve_integral_form(
 
         # Hitung metode analitik dan cari error
         try:
-            error_relatif = None
             hasil_analitik = integral_analitik(fungsi_python, batas_bawah, batas_atas)
             error_relatif = hitung_error(hasil_numerik, hasil_analitik)
         except ValueError as ve_analitik:
