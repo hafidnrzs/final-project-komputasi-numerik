@@ -14,7 +14,7 @@ Proyek ini merupakan implementasi berbagai metode numerik untuk menyelesaikan pe
 - Metode Trapezoida
 - Metode Simpson
 
-Terakhir diuji menggunakan Python 3.8
+Terakhir diuji menggunakan Python 3.8 - 3.11
 
 ## Instalasi
 
