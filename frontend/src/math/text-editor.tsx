@@ -11,9 +11,14 @@ addStyles();
 interface MathInputProps {
   onChange?: (latex: string) => void;
   initialLatex?: string;
+  submitButton?: React.EventHandler<React.SyntheticEvent>;
 }
 
-const MathInput = ({ onChange, initialLatex }: MathInputProps) => {
+const MathInput = ({
+  onChange,
+  initialLatex,
+  submitButton,
+}: MathInputProps) => {
   const [latex, setLatex] = useState<string>(
     initialLatex || "\\frac{1}{2}x^2 + 3x + 4"
   );
@@ -152,7 +157,13 @@ const MathInput = ({ onChange, initialLatex }: MathInputProps) => {
           </ul>
         </div>
         <div className="">
-          <Button variant={"default"} type="submit">
+          <Button
+            variant={"default"}
+            type="button"
+            onClick={(e) => {
+              if (submitButton) submitButton(e);
+            }}
+          >
             Hitung
           </Button>
         </div>
