@@ -15,6 +15,7 @@ import MathPreview from "./show-func-math";
 
 interface SuccesProps {
   input_fungsi?: string;
+  turunan_fungsi?: string;
   metode: string;
   hasil_analitik: string | number;
   hasil_numerik: string | number;
@@ -38,13 +39,13 @@ const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
 
   const handleSubmit: FormEventHandler = (e) => {
     e.preventDefault();
-    const escapedLatex = data.fungsi_latex.replace(/\\\\/g, "\\");
+    // const escapedLatex = data.fungsi_latex.replace(/\\\\/g, "\\");
     // Buat params URLSearchParams
     const params = new URLSearchParams();
     params.append("metode", data.metode);
     params.append("x", data.x); // sudah string, backend akan menerima float
     params.append("h", data.h_step); // sudah string, backend akan menerima float
-    params.append("fungsi_latex", escapedLatex);
+    params.append("fungsi_latex", data.fungsi_latex);
 
     axios
       .post("http://127.0.0.1:8000/turunan/", params, {
@@ -57,6 +58,7 @@ const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
         if (response.data.hasil_analitik) {
           setResSucces({
             input_fungsi: response.data.input_fungsi,
+            turunan_fungsi: response.data.turunan_fungsi,
             metode: response.data.metode,
             hasil_analitik: response.data.hasil_analitik,
             hasil_numerik: response.data.hasil_numerik,
@@ -74,7 +76,7 @@ const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
       .catch((error) => {
         console.error("Error submitting form:", error);
         setResError({
-          metode: "Selisih Maju",
+          metode: data.metode,
           message: error.response?.data?.detail || "Terjadi kesalahan",
         });
       });
@@ -113,7 +115,7 @@ const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="selisih-maju">Selisih Maju</SelectItem>
-                  <SelectItem value="selisih_tengahan">
+                  <SelectItem value="selisih-tengahan">
                     Selisih Tengahan
                   </SelectItem>
                   <SelectItem value="selisih-mundur">Selisih Mundur</SelectItem>
@@ -175,30 +177,40 @@ const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
             />
           </div>
         </form>
-        <div className="mt-12 border border-dashed rounded-2xl h-full p-4 flex flex-col gap-4 justify-start items-start w-full max-w-3xl mx-auto">
+        <div className="mt-8 border border-dashed rounded-2xl h-full p-4 flex flex-col gap-4 justify-start items-start w-full max-w-3xl mx-auto">
           <div className="flex flex-col gap-2 p-4">
-            <h2 className="text-lg font-semibold">Hasil:</h2>
+            <h2 className="text-lg font-bold border-b-1">Hasil</h2>
             {resSucces ? (
               <>
-                <div className="text-sm flex flex-row gap-2 items-center">
-                  Fungsi: <MathPreview initialLatex={resSucces.input_fungsi} />
+                <div className="text-sm flex flex-col items-start space-y-2">
+                  <span className="font-semibold">Fungsi</span>{" "}
+                  <MathPreview
+                    initialLatex={`f(x) = ${resSucces.input_fungsi}`}
+                  />
                 </div>
-                <div className="text-sm">
-                  Metode:{" "}
-                  <strong className="capitalize">
+                <div className="text-sm flex flex-col items-start space-y-2">
+                  <span className="font-semibold">Turunan Fungsi</span>{" "}
+                  <MathPreview
+                    initialLatex={`f'(x) = ${resSucces.turunan_fungsi}`}
+                  />
+                </div>
+                <div className="text-sm flex flex-col items-start">
+                  <span className="font-semibold mb-1">Metode</span>
+                  <span className="capitalize">
                     {resSucces.metode.replace(/[_-]/g, " ")}
-                  </strong>
+                  </span>
                 </div>
                 <div className="text-sm">
-                  Error: <strong>{resSucces.error}</strong>
+                  <span className="font-semibold">Hasil Numerik: </span>
+                  {resSucces.hasil_numerik.toString()}
                 </div>
                 <div className="text-sm">
-                  Hasil Analitik:{" "}
-                  <strong>{resSucces.hasil_analitik.toString()}</strong>
+                  <span className="font-semibold">Hasil Analitik: </span>
+                  {resSucces.hasil_analitik.toString()}
                 </div>
                 <div className="text-sm">
-                  Hasil Numerik:{" "}
-                  <strong>{resSucces.hasil_numerik.toString()}</strong>
+                  <span className="font-semibold">Error: </span>{" "}
+                  {resSucces.error}
                 </div>
               </>
             ) : null}

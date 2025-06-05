@@ -136,13 +136,30 @@ const MathInput = ({
         <CollapsibleTrigger asChild>
           <Button
             variant="outline"
-            className="mb-2 w-full hover:cursor-pointer"
+            className="mb-2 w-full font-normal hover:cursor-pointer"
             type="button"
           >
             Tampilkan/Sembunyikan Teks Latex
           </Button>
         </CollapsibleTrigger>
         <CollapsibleContent>
+          <div className="text-sm text-muted-foreground">
+            <p>Format yang didukung:</p>
+            <ul className="list-disc pl-5">
+              <li>
+                Pecahan:{" "}
+                <code className="bg-gray-200 text-slate-500 rounded px-1">
+                  {"\\frac{1}{2}"}
+                </code>
+              </li>
+              <li>
+                Pangkat:{" "}
+                <code className="bg-gray-200 text-slate-500 rounded px-1">
+                  {"x^2"}
+                </code>
+              </li>
+            </ul>
+          </div>
           <Textarea
             value={latex}
             onChange={(e) => {
@@ -158,24 +175,7 @@ const MathInput = ({
         </CollapsibleContent>
       </Collapsible>
 
-      <div className="text-sm text-muted-foreground justify-between flex-row flex">
-        <div>
-          <p>Format yang didukung:</p>
-          <ul className="list-disc pl-5 mt-1">
-            <li>
-              Pecahan:{" "}
-              <code className="bg-gray-200 text-slate-500 rounded px-1">
-                {"\\frac{1}{2}"}
-              </code>
-            </li>
-            <li>
-              Pangkat:{" "}
-              <code className="bg-gray-200 text-slate-500 rounded px-1">
-                {"x^2"}
-              </code>
-            </li>
-          </ul>
-        </div>
+      <div className="text-sm text-muted-foreground justify-end flex-row flex">
         <div className="">
           <Button
             variant={"default"}

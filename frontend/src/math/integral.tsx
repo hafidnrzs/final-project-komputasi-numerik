@@ -15,6 +15,7 @@ import MathPreview from "./show-func-math";
 
 interface SuccesProps {
   input_fungsi?: string;
+  integral_fungsi?: string;
   metode: string;
   hasil_analitik: string | number;
   hasil_numerik: string | number;
@@ -61,10 +62,12 @@ const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
         },
       })
       .then((response) => {
+        console.log(response.data.integral_fungsi);
         console.log("Response data:", response.data);
         if (response.data.hasil_analitik) {
           setResSucces({
             input_fungsi: response.data.input_fungsi,
+            integral_fungsi: response.data.integral_fungsi,
             metode: response.data.metode,
             hasil_analitik: response.data.hasil_analitik,
             hasil_numerik: response.data.hasil_numerik,
@@ -248,27 +251,36 @@ const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
             />
           </div>
         </form>
-        <div className="mt-12 border border-dashed rounded-2xl h-full p-4 flex flex-col gap-4 justify-start items-start w-full max-w-3xl mx-auto">
+        <div className="mt-8 border border-dashed rounded-2xl h-full p-4 flex flex-col gap-4 justify-start items-start w-full max-w-3xl mx-auto">
           <div className="flex flex-col gap-2 p-4">
-            <h2 className="text-lg font-semibold">Hasil:</h2>
+            <h2 className="text-lg font-bold border-b-1">Hasil</h2>
             {resSucces ? (
               <>
-                <div className="text-sm flex flex-row gap-2 items-center">
-                  Fungsi: <MathPreview initialLatex={resSucces.input_fungsi} />
+                <div className="text-sm flex flex-col items-start space-y-2">
+                  <span className="font-semibold">Fungsi</span>{" "}
+                  <MathPreview initialLatex={resSucces.input_fungsi} />
+                </div>
+                <div className="text-sm flex flex-col items-start space-y-2">
+                  <span className="font-semibold">Integral Fungsi </span>
+                  <MathPreview initialLatex={resSucces?.integral_fungsi} />
+                </div>
+                <div className="text-sm flex flex-col items-start">
+                  <span className="font-semibold mb-1">Metode</span>
+                  <span className="capitalize">
+                    {resSucces.metode.replace(/[_-]/g, " ")}
+                  </span>
                 </div>
                 <div className="text-sm">
-                  Metode: <strong>{resSucces.metode}</strong>
+                  <span className="font-semibold">Hasil Numerik: </span>
+                  {resSucces.hasil_numerik.toString()}
                 </div>
                 <div className="text-sm">
-                  Error: <strong>{resSucces.error}</strong>
+                  <span className="font-semibold">Hasil Analitik: </span>
+                  {resSucces.hasil_analitik.toString()}
                 </div>
                 <div className="text-sm">
-                  Hasil Analitik:{" "}
-                  <strong>{resSucces.hasil_analitik.toString()}</strong>
-                </div>
-                <div className="text-sm">
-                  Hasil Numerik:{" "}
-                  <strong>{resSucces.hasil_numerik.toString()}</strong>
+                  <span className="font-semibold">Error: </span>{" "}
+                  {resSucces.error}
                 </div>
               </>
             ) : null}
