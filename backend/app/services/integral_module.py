@@ -1,5 +1,5 @@
 import numpy as np
-from sympy import integrate, Symbol
+from sympy import integrate, Symbol, Integral, latex
 from services.utils import hitung_h, eval_func
 
 x = Symbol("x")
@@ -16,16 +16,18 @@ def integral_analitik(fungsi_str, batas_bawah, batas_atas):
 
     Returns:
         float: Hasil integral analitik yang sudah dievaluasi
+        str: Integral fungsi dalam format LaTeX
 
     Raises:
         ValueError: Jika fungsi tidak bisa diintegrasikan secara analitik
     """
     try:
         hasil_integral = integrate(fungsi_str, (x, batas_bawah, batas_atas))
+        integral_fungsi = latex(Integral(fungsi_str, (x, batas_bawah, batas_atas)))
 
         # Evaluasi hasil ke nilai numerik
         if hasattr(hasil_integral, "evalf"):
-            return round(float(hasil_integral.evalf()), 3)
+            return round(float(hasil_integral.evalf()), 3), integral_fungsi
         return round(float(hasil_integral), 3)
     except Exception as e:
         raise ValueError(f"Gagal menghitung integral analitik: {str(e)}")

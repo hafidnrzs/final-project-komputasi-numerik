@@ -19,6 +19,7 @@ router = APIRouter(prefix="/turunan", tags=["Metode Numerik Turunan"])
 class DerivativeCalcResponse(BaseModel):
     metode: str
     input_fungsi: str
+    turunan_fungsi: str
     input_x: float
     input_h: float
     hasil_numerik: float
@@ -63,11 +64,16 @@ async def solve_derivative_form(
             hasil_numerik = selisih_tengahan(fungsi_python, x, h_step, np_alias=np)
         elif metode == "selisih-mundur":
             hasil_numerik = selisih_mundur(fungsi_python, x, h_step, np_alias=np)
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Metode '{metode}' tidak valid. Gunakan 'selisih-maju', 'selisih-tengahan', atau 'selisih-mundur'.",
+            )
 
         # Hitung metode analitik dan cari error
         try:
-            hasil_analitik = turunan_analitik(fungsi_python, x)
-            error_relatif = hitung_error_persen(hasil_numerik, hasil_analitik) * 100
+            hasil_analitik, turunan_fungsi_latex = turunan_analitik(fungsi_python, x)
+            error_relatif = hitung_error_persen(hasil_numerik, hasil_analitik)
         except ValueError as ve_analitik:
             raise HTTPException(
                 status_code=400,
@@ -77,6 +83,7 @@ async def solve_derivative_form(
         return DerivativeCalcResponse(
             metode=metode,
             input_fungsi=fungsi_latex,
+            turunan_fungsi=turunan_fungsi_latex,
             input_x=x,
             input_h=h_step,
             hasil_numerik=hasil_numerik,
@@ -86,7 +93,6 @@ async def solve_derivative_form(
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve))
     except HTTPException:
-        raise
+        raise HTTPException(status_code=400)
     except Exception:
-        # print(f"Error tidak terduga di solve_derivative_form: {e}")
         raise HTTPException(status_code=500, detail="Terjadi kesalahan di server.")

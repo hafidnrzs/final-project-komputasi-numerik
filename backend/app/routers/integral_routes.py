@@ -19,6 +19,7 @@ router = APIRouter(prefix="/integral", tags=["Metode Numerik Integral"])
 class IntegralCalcResponse(BaseModel):
     metode: str
     input_fungsi: str
+    integral_fungsi: str
     input_batas_bawah: float
     input_batas_atas: float
     input_h: Optional[float] = None
@@ -113,10 +114,17 @@ async def solve_integral_form(
             hasil_numerik = simpson_integral(
                 fungsi_python, current_N, batas_bawah, batas_atas, np_alias=np
             )
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Metode '{metode}' tidak valid. Gunakan 'riemann', 'trapezoida', atau 'simpson'.",
+            )
 
         # Hitung metode analitik dan cari error
         try:
-            hasil_analitik = integral_analitik(fungsi_python, batas_bawah, batas_atas)
+            hasil_analitik, integral_fungsi_latex = integral_analitik(
+                fungsi_python, batas_bawah, batas_atas
+            )
             error_relatif = hitung_error(hasil_numerik, hasil_analitik)
         except ValueError as ve_analitik:
             raise HTTPException(
@@ -127,6 +135,7 @@ async def solve_integral_form(
         return IntegralCalcResponse(
             metode=metode,
             input_fungsi=fungsi_latex,
+            integral_fungsi=str(integral_fungsi_latex),
             input_batas_bawah=batas_bawah,
             input_batas_atas=batas_atas,
             input_h=current_h
@@ -143,5 +152,4 @@ async def solve_integral_form(
     except HTTPException:
         raise
     except Exception:
-        # print(f"Error tidak terduga di solve_integral_form: {e}")
         raise HTTPException(status_code=500, detail="Terjadi kesalahan di server.")
