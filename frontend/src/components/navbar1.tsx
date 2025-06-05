@@ -15,7 +15,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 interface MenuItem {
   title: string;
@@ -44,9 +44,7 @@ interface Navbar1Props {
     };
   };
 }
-const isActive = (url: string) => {
-  return window.location.pathname === url;
-};
+
 const Navbar1 = ({
   logo = {
     url: "/",
@@ -66,6 +64,12 @@ const Navbar1 = ({
     },
   ],
 }: Navbar1Props) => {
+  const location = useLocation();
+
+  const isActive = (url: string) => {
+    return location.pathname === url;
+  };
+
   return (
     <section className="py-4">
       <div className="container">
@@ -73,7 +77,7 @@ const Navbar1 = ({
         <nav className="hidden justify-between lg:flex">
           <div className="flex items-center gap-6">
             {/* Logo */}
-            <Link to={"/"} className="flex items-center gap-2">
+            <Link to={logo.url} className="flex items-center gap-2">
               <img src={logo.src} className="max-h-8" alt={logo.alt} />
               <span className="text-lg font-semibold tracking-tighter">
                 {logo.title}
@@ -86,16 +90,17 @@ const Navbar1 = ({
                     const active = isActive(item.url);
                     return (
                       <NavigationMenuItem key={item.title}>
-                        <NavigationMenuLink
-                          href={item.url}
-                          className={`group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-accent-foreground ${
-                            active
-                              ? "bg-muted text-accent-foreground"
-                              : "text-muted-foreground"
-                          }`}
-                        >
-                          {item.title}
-                        </NavigationMenuLink>
+                        <Link to={item.url}>
+                          <NavigationMenuLink
+                            className={`group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-accent-foreground ${
+                              active
+                                ? "bg-muted text-accent-foreground"
+                                : "text-muted-foreground"
+                            }`}
+                          >
+                            {item.title}
+                          </NavigationMenuLink>
+                        </Link>
                       </NavigationMenuItem>
                     );
                   })}
@@ -109,9 +114,9 @@ const Navbar1 = ({
         <div className="block lg:hidden">
           <div className="flex items-center gap-x-2 justify-between">
             {/* Logo */}
-            <a href={logo.url} className="flex items-center gap-2">
+            <Link to={logo.url} className="flex items-center gap-2">
               <img src={logo.src} className="max-h-8" alt={logo.alt} />
-            </a>
+            </Link>
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="outline" size="icon">
@@ -121,9 +126,9 @@ const Navbar1 = ({
               <SheetContent className="overflow-y-auto">
                 <SheetHeader>
                   <SheetTitle>
-                    <a href={logo.url} className="flex items-center gap-2">
+                    <Link to={logo.url} className="flex items-center gap-2">
                       <img src={logo.src} className="max-h-8" alt={logo.alt} />
-                    </a>
+                    </Link>
                   </SheetTitle>
                 </SheetHeader>
                 <div className="flex flex-col gap-6 p-4">
@@ -133,14 +138,17 @@ const Navbar1 = ({
                     className="flex w-full flex-col gap-4"
                   >
                     {menu.map((item) => {
+                      const active = isActive(item.url);
                       return (
-                        <a
+                        <Link
                           key={item.title}
-                          href={item.url}
-                          className="text-md font-semibold"
+                          to={item.url}
+                          className={`text-md font-semibold ${
+                            active ? "text-primary" : ""
+                          }`}
                         >
                           {item.title}
-                        </a>
+                        </Link>
                       );
                     })}
                   </Accordion>

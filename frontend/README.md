@@ -1,54 +1,59 @@
-# React + TypeScript + Vite
+# Komputasi Numerik Web Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplikasi web untuk perhitungan numerik turunan dan integrasi menggunakan berbagai metode numerik.
 
-Currently, two official plugins are available:
+## Fitur
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Turunan Numerik
 
-## Expanding the ESLint configuration
+- Metode Selisih Maju
+- Metode Selisih Mundur
+- Metode Selisih Tengah
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Integrasi Numerik
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+- Metode Riemann
+- Metode Trapezoida
+- Metode Simpson
+
+## Instalasi
+
+1. Clone repository
+
+```bash
+git clone https://github.com/hafidnrzs/final-project-komputasi-numerik.git
+cd final-project-komputasi-numerik/frontend
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+2. Install dependencies
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+```bash
+npm install
 ```
+
+3. Jalankan aplikasi dalam mode development
+
+```bash
+npm run dev
+```
+
+4. Build untuk production
+
+```bash
+npm run build
+```
+
+## Penggunaan
+
+1. Buka aplikasi di browser (default: http://localhost:5173)
+2. Pilih metode perhitungan (Turunan atau Integrasi)
+3. Masukkan fungsi matematika menggunakan format LaTeX
+4. Isi parameter yang diperlukan sesuai metode yang dipilih
+5. Klik tombol untuk mendapatkan hasil perhitungan
+
+## Format Input
+
+- Fungsi matematika harus dimasukkan dalam format LaTeX
+- Contoh input yang valid:
+  - `x^2 + 2x + 1`
+  - `\frac{1}{4}(x^2 + 2x + 1)`
