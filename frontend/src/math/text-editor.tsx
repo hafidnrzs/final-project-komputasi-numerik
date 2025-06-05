@@ -4,6 +4,11 @@ import { useState, useRef, useEffect } from "react";
 import { addStyles, EditableMathField } from "react-mathquill";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 // Tambahkan styles MathQuill
 addStyles();
@@ -29,7 +34,7 @@ const MathInput = ({
   // Filter untuk hanya mengizinkan pecahan dan pangkat
   const filterMathInput = (latexStr: string) => {
     // Hanya izinkan karakter tertentu: angka, huruf, +, -, *, /, (, ), ^, \, {, }
-    const filtered = latexStr.replace(/[^0-9a-zA-Z\+\-\*\/\(\)\^\{\}\\]/g, "");
+    const filtered = latexStr.replace(/[^0-9a-zA-Z\+\-\*\/\(\)\^\{\}\\=]/g, "");
 
     // Validasi struktur dasar pecahan dan pangkat
     const hasValidFractions = filtered.split("\\frac").length <= 3; // Maksimal 2 pecahan
@@ -126,19 +131,32 @@ const MathInput = ({
         />
       </div>
 
-      {/* Shadcn Textarea untuk tampilan/edit alternatif */}
-      <Textarea
-        value={latex}
-        onChange={(e) => {
-          const filtered = filterMathInput(e.target.value);
-          setLatex(filtered);
-          if (mathFieldRef.current) {
-            mathFieldRef.current.latex(filtered);
-          }
-        }}
-        placeholder="Ketik ekspresi matematika (hanya pecahan dan pangkat)"
-        className="font-mono h-20"
-      />
+      {/* Collapsible Shadcn Textarea untuk tampilan/edit alternatif */}
+      <Collapsible>
+        <CollapsibleTrigger asChild>
+          <Button
+            variant="outline"
+            className="mb-2 w-full hover:cursor-pointer"
+            type="button"
+          >
+            Tampilkan/Sembunyikan Teks Latex
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <Textarea
+            value={latex}
+            onChange={(e) => {
+              const filtered = filterMathInput(e.target.value);
+              setLatex(filtered);
+              if (mathFieldRef.current) {
+                mathFieldRef.current.latex(filtered);
+              }
+            }}
+            placeholder="Ketik ekspresi matematika (hanya pecahan dan pangkat)"
+            className="font-mono h-20 mt-2"
+          />
+        </CollapsibleContent>
+      </Collapsible>
 
       <div className="text-sm text-muted-foreground justify-between flex-row flex">
         <div>
@@ -146,13 +164,15 @@ const MathInput = ({
           <ul className="list-disc pl-5 mt-1">
             <li>
               Pecahan:{" "}
-              <code>
-                \frac{1}
-                {2}
+              <code className="bg-gray-200 text-slate-500 rounded px-1">
+                {"\\frac{1}{2}"}
               </code>
             </li>
             <li>
-              Pangkat: <code>x^2</code>
+              Pangkat:{" "}
+              <code className="bg-gray-200 text-slate-500 rounded px-1">
+                {"x^2"}
+              </code>
             </li>
           </ul>
         </div>

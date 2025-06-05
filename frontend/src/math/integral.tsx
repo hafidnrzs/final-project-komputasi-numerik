@@ -122,7 +122,7 @@ const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
               </Select>
             </div>
           </div>
-          <div className="gap-2 grid grid-rows-1 grid-cols-12 w-full">
+          {/* <div className="gap-2 grid grid-rows-1 grid-cols-12 w-full">
             <div className="grid col-span-5">
               <Label htmlFor="x">
                 Masukkan nilai <pre>X</pre>
@@ -143,29 +143,8 @@ const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
                 onChange={(e) => setData({ ...data, x: e.target.value })}
               />
             </div>
-          </div>
-          <div className="gap-2 grid grid-rows-1 grid-cols-12 w-full">
-            <div className="grid col-span-5">
-              <Label htmlFor="h">
-                Masukkan nilai <pre>h</pre>
-              </Label>
-            </div>
-            <div className="grid col-span-7">
-              <Input
-                placeholder="Ukuran Langkah (step size)"
-                inputMode="numeric"
-                type="number"
-                id="h"
-                name="h"
-                className="w-full"
-                autoComplete="off"
-                autoFocus
-                required
-                value={data.h}
-                onChange={(e) => setData({ ...data, h: e.target.value })}
-              />
-            </div>
-          </div>
+          </div> */}
+
           <div className="gap-2 grid grid-rows-1 grid-cols-12 w-full">
             <div className="grid col-span-5">
               <Label htmlFor="a">Masukkan nilai Batas Atas</Label>
@@ -206,6 +185,29 @@ const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
           </div>
           <div className="gap-2 grid grid-rows-1 grid-cols-12 w-full">
             <div className="grid col-span-5">
+              <Label htmlFor="h">
+                Masukkan nilai <pre>h</pre>
+              </Label>
+            </div>
+            <div className="grid col-span-7">
+              <Input
+                placeholder="Ukuran Langkah (step size)"
+                inputMode="numeric"
+                type="number"
+                id="h"
+                name="h"
+                className="w-full"
+                autoComplete="off"
+                autoFocus
+                required={data.metode === "riemann" || data.N_segment === ""}
+                min={0.01}
+                value={data.h}
+                onChange={(e) => setData({ ...data, h: e.target.value })}
+              />
+            </div>
+          </div>
+          <div className="gap-2 grid grid-rows-1 grid-cols-12 w-full">
+            <div className="grid col-span-5">
               <Label htmlFor="N_segment">Masukkan nilai N segment</Label>
             </div>
             <div className="grid col-span-7">
@@ -216,8 +218,12 @@ const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
                 id="N_segment"
                 name="N_segment"
                 className="w-full"
+                min={1}
                 autoComplete="off"
                 autoFocus
+                required={
+                  data.metode === "trapezoida" || data.metode === "simpson"
+                }
                 value={data.N_segment}
                 onChange={(e) =>
                   setData({ ...data, N_segment: e.target.value })
@@ -268,13 +274,13 @@ const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
           </div>
         </div>
       </div>
-      <div className="flex flex-col gap-4 rounded-xl p-4 w-full max-w-3xl mx-auto mt-8 border-dashed border-2 border-sidebar-border/70 dark:border-sidebar-border">
+      {/* <div className="flex flex-col gap-4 rounded-xl p-4 w-full max-w-3xl mx-auto mt-8 border-dashed border-2 border-sidebar-border/70 dark:border-sidebar-border">
         <div className="items-center">
           <pre className="rounded bg-slate-300 p-4 font-mono text-sm whitespace-pre-wrap dark:bg-gray-800">
             {JSON.stringify(data, null, 2)}
           </pre>
         </div>
-      </div>
+      </div> */}
     </>
   );
 };

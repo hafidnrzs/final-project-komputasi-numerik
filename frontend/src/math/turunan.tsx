@@ -11,8 +11,10 @@ import {
 } from "@/components/ui/select";
 import axios from "axios";
 import { Helmet } from "react-helmet";
+import MathPreview from "./show-func-math";
 
 interface SuccesProps {
+  input_fungsi?: string;
   metode: string;
   hasil_analitik: string | number;
   hasil_numerik: string | number;
@@ -51,9 +53,10 @@ const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
         },
       })
       .then((response) => {
-        console.log("Response data:", response);
+        console.log("Response data:", response.data);
         if (response.data.hasil_analitik) {
           setResSucces({
+            input_fungsi: response.data.input_fungsi,
             metode: response.data.metode,
             hasil_analitik: response.data.hasil_analitik,
             hasil_numerik: response.data.hasil_numerik,
@@ -177,8 +180,14 @@ const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
             <h2 className="text-lg font-semibold">Hasil:</h2>
             {resSucces ? (
               <>
+                <div className="text-sm flex flex-row gap-2 items-center">
+                  Fungsi: <MathPreview initialLatex={resSucces.input_fungsi} />
+                </div>
                 <div className="text-sm">
-                  Metode: <strong>{resSucces.metode}</strong>
+                  Metode:{" "}
+                  <strong className="capitalize">
+                    {resSucces.metode.replace(/[_-]/g, " ")}
+                  </strong>
                 </div>
                 <div className="text-sm">
                   Error: <strong>{resSucces.error}</strong>
@@ -207,13 +216,13 @@ const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
           </div>
         </div>
       </div>
-      <div className="flex flex-col gap-4 rounded-xl p-4 w-full max-w-3xl mx-auto mt-8 border-dashed border-2 border-sidebar-border/70 dark:border-sidebar-border">
+      {/* <div className="flex flex-col gap-4 rounded-xl p-4 w-full max-w-3xl mx-auto mt-8 border-dashed border-2 border-sidebar-border/70 dark:border-sidebar-border">
         <div className="items-center">
           <pre className="rounded bg-slate-300 p-4 font-mono text-sm whitespace-pre-wrap dark:bg-gray-800">
             {JSON.stringify(data, null, 2)}
           </pre>
         </div>
-      </div>
+      </div> */}
     </>
   );
 };
