@@ -26,7 +26,7 @@ def integral_analitik(fungsi_str, batas_bawah, batas_atas):
 
         fungsi = parse_expr(fungsi_str)
         integral_fungsi = integrate(fungsi_str, x)
-        latex_integral = rf"\int_{{{batas_bawah}}}^{{{batas_atas}}} {latex(fungsi)}dx = {latex(integral_fungsi)}"
+        latex_integral = rf"\int_{{{batas_bawah}}}^{{{batas_atas}}} {latex(fungsi)}dx = \left[ {latex(integral_fungsi)} \right]_{{{batas_bawah}}}^{{{batas_atas}}}"
 
         # Evaluasi hasil ke nilai numerik
         if hasattr(hasil_integral, "evalf"):
@@ -89,14 +89,19 @@ def trapezoida_integral(
     if h == 0:
         raise ValueError("Ukuran langkah (h) tidak boleh nol.")
 
+    # x_0 = batas bawah
+    x = batas_bawah
     f_0 = eval_func(fungsi_str, batas_bawah, np_alias)
+    # x_n = batas atas
     f_n = eval_func(fungsi_str, batas_atas, np_alias)
 
-    i = batas_bawah + h
     iter_result = 0
-    while i < batas_atas:
-        iter_result += eval_func(fungsi_str, i)
-        i += h
+    for i in range(1, N):
+        # x_1 = x_0 + h
+        # x_2 = x_1 + h
+        # ...
+        x += h
+        iter_result += eval_func(fungsi_str, x)
     result = h / 2 * (f_0 + 2 * iter_result + f_n)
 
     return round(result, 3)
@@ -125,17 +130,22 @@ def simpson_integral(
     if h == 0:
         raise ValueError("Ukuran langkah (h) tidak boleh nol.")
 
+    # x_0 = batas bawah
+    x = batas_bawah
     f_0 = eval_func(fungsi_str, batas_bawah, np_alias)
+    # x_n = batas atas
     f_n = eval_func(fungsi_str, batas_atas, np_alias)
 
-    i = batas_bawah + h
     iter_result = 0
-    while i < batas_atas:
-        if i % 2 == 0:  # Jika genap
-            iter_result += 2 * eval_func(fungsi_str, i)
-        else:
-            iter_result += 4 * eval_func(fungsi_str, i)
-        i += h
+    for i in range(1, N):
+        # x_1 = x_0 + h
+        # x_2 = x_1 + h
+        # ...
+        x += h
+        if i % 2 == 0:  # jika i genap
+            iter_result += 2 * eval_func(fungsi_str, x)
+        else:  # jika i ganjil
+            iter_result += 4 * eval_func(fungsi_str, x)
     result = h / 3 * (f_0 + iter_result + f_n)
 
     return round(result, 3)
