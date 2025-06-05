@@ -11,8 +11,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import MathPreview from "./show-func-math";
 
 interface SuccesProps {
+  input_fungsi?: string;
   metode: string;
   hasil_analitik: string | number;
   hasil_numerik: string | number;
@@ -59,8 +61,10 @@ const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
         },
       })
       .then((response) => {
+        console.log("Response data:", response.data);
         if (response.data.hasil_analitik) {
           setResSucces({
+            input_fungsi: response.data.input_fungsi,
             metode: response.data.metode,
             hasil_analitik: response.data.hasil_analitik,
             hasil_numerik: response.data.hasil_numerik,
@@ -117,7 +121,7 @@ const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
                 <SelectContent>
                   <SelectItem value="riemann">Riemann</SelectItem>
                   <SelectItem value="trapezoida">Trapezoida</SelectItem>
-                  <SelectItem value="selisih-mundur">Simpson</SelectItem>
+                  <SelectItem value="simpson">Simpson</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -183,54 +187,59 @@ const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
               />
             </div>
           </div>
-          <div className="gap-2 grid grid-rows-1 grid-cols-12 w-full">
-            <div className="grid col-span-5">
-              <Label htmlFor="h">
-                Masukkan nilai <pre>h</pre>
-              </Label>
+          {/* {kerika simpson dan trapezoida h_step Hide} */}
+          {data.metode === "riemann" && (
+            <div className="gap-2 grid grid-rows-1 grid-cols-12 w-full">
+              <div className="grid col-span-5">
+                <Label htmlFor="h">Masukkan nilai h step</Label>
+              </div>
+              <div className="grid col-span-7">
+                <Input
+                  placeholder="Ukuran Langkah (step size)"
+                  inputMode="numeric"
+                  type="number"
+                  id="h"
+                  name="h"
+                  className="w-full"
+                  min={0.01}
+                  autoComplete="off"
+                  autoFocus
+                  required={data.metode === "riemann"}
+                  value={data.h}
+                  onChange={(e) => setData({ ...data, h: e.target.value })}
+                />
+              </div>
             </div>
-            <div className="grid col-span-7">
-              <Input
-                placeholder="Ukuran Langkah (step size)"
-                inputMode="numeric"
-                type="number"
-                id="h"
-                name="h"
-                className="w-full"
-                autoComplete="off"
-                autoFocus
-                required={data.metode === "riemann" || data.N_segment === ""}
-                min={0.01}
-                value={data.h}
-                onChange={(e) => setData({ ...data, h: e.target.value })}
-              />
+          )}
+
+          {/* ketika reiman N_segment Hide */}
+          {data.metode !== "riemann" && (
+            <div className="gap-2 grid grid-rows-1 grid-cols-12 w-full">
+              <div className="grid col-span-5">
+                <Label htmlFor="N_segment">Masukkan nilai N segment</Label>
+              </div>
+              <div className="grid col-span-7">
+                <Input
+                  placeholder="Nilai Batas N segment"
+                  inputMode="numeric"
+                  type="number"
+                  id="N_segment"
+                  name="N_segment"
+                  className="w-full"
+                  min={1}
+                  autoComplete="off"
+                  autoFocus
+                  required={
+                    data.metode === "trapezoida" || data.metode === "simpson"
+                  }
+                  value={data.N_segment}
+                  onChange={(e) =>
+                    setData({ ...data, N_segment: e.target.value })
+                  }
+                />
+              </div>
             </div>
-          </div>
-          <div className="gap-2 grid grid-rows-1 grid-cols-12 w-full">
-            <div className="grid col-span-5">
-              <Label htmlFor="N_segment">Masukkan nilai N segment</Label>
-            </div>
-            <div className="grid col-span-7">
-              <Input
-                placeholder="Nilai Batas N segment"
-                inputMode="numeric"
-                type="number"
-                id="N_segment"
-                name="N_segment"
-                className="w-full"
-                min={1}
-                autoComplete="off"
-                autoFocus
-                required={
-                  data.metode === "trapezoida" || data.metode === "simpson"
-                }
-                value={data.N_segment}
-                onChange={(e) =>
-                  setData({ ...data, N_segment: e.target.value })
-                }
-              />
-            </div>
-          </div>
+          )}
           <div className="gap-2 flex-col w-full">
             <MathInput
               onChange={(value: string) => setData({ ...data, fungsi: value })}
@@ -244,6 +253,9 @@ const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
             <h2 className="text-lg font-semibold">Hasil:</h2>
             {resSucces ? (
               <>
+                <div className="text-sm flex flex-row gap-2 items-center">
+                  Fungsi: <MathPreview initialLatex={resSucces.input_fungsi} />
+                </div>
                 <div className="text-sm">
                   Metode: <strong>{resSucces.metode}</strong>
                 </div>
