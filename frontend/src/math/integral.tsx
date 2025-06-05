@@ -27,7 +27,7 @@ interface ErrorProps {
   message: string;
 }
 
-const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
+const Integrasi = (props: React.HTMLAttributes<HTMLDivElement>) => {
   const [resSucces, setResSucces] = React.useState<SuccesProps | null>(null);
   const [resError, setResError] = React.useState<ErrorProps | null>(null);
   const [data, setData] = React.useState({
@@ -42,17 +42,62 @@ const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
 
   const handleSubmit: FormEventHandler = (e) => {
     e.preventDefault();
+
+    // Validasi field wajib
+    if (!data.metode) {
+      setResError({
+        metode: "Validation Error",
+        message: "Metode harus dipilih",
+      });
+      return;
+    }
+
+    if (!data.fungsi) {
+      setResError({
+        metode: "Validation Error",
+        message: "Fungsi harus diisi",
+      });
+      return;
+    }
+
+    if (!data.a || !data.b) {
+      setResError({
+        metode: "Validation Error",
+        message: "Batas atas dan batas bawah harus diisi",
+      });
+      return;
+    }
+
+    // Validasi field wajib spesifik untuk metode tertentu
+    if (data.metode === "riemann" && !data.h) {
+      setResError({
+        metode: "Validation Error",
+        message: "Nilai h step harus diisi untuk metode Riemann",
+      });
+      return;
+    }
+
+    if (
+      (data.metode === "trapezoida" || data.metode === "simpson") &&
+      !data.N_segment
+    ) {
+      setResError({
+        metode: "Validation Error",
+        message: "Nilai N segment harus diisi untuk metode Trapezoida/Simpson",
+      });
+      return;
+    }
+
     const params = new URLSearchParams();
     params.append("metode", data.metode);
     params.append("fungsi_latex", data.fungsi);
-    params.append("batas_bawah", data.a); // a = batas bawah
-    params.append("batas_atas", data.b); // b = batas atas
+    params.append("batas_bawah", data.a);
+    params.append("batas_atas", data.b);
 
-    // Pengiriman parameter tergantung metode
     if (data.metode === "riemann") {
       params.append("h", data.h);
     } else if (data.metode === "trapezoida" || data.metode === "simpson") {
-      params.append("N", data.N_segment); // gunakan N_segment dari state
+      params.append("N", data.N_segment);
     }
 
     axios
@@ -62,8 +107,6 @@ const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
         },
       })
       .then((response) => {
-        console.log(response.data.integral_fungsi);
-        console.log("Response data:", response.data);
         if (response.data.hasil_analitik) {
           setResSucces({
             input_fungsi: response.data.input_fungsi,
@@ -83,10 +126,54 @@ const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
         }
       })
       .catch((error) => {
+        let errorMessage = "Terjadi kesalahan pada server";
+
+        if (error.response) {
+          switch (error.response.status) {
+            case 400:
+              errorMessage =
+                "Permintaan tidak valid: " +
+                (error.response.data?.detail ||
+                  "Data yang dikirim tidak sesuai format");
+              break;
+            case 422:
+              // Kelola error validasi
+              if (Array.isArray(error.response.data?.detail)) {
+                const validationErrors = error.response.data.detail.map(
+                  (err: any) => {
+                    const field = err.loc[err.loc.length - 1]; // Ambil elemen terakhir dari array loc
+                    const message = err.msg;
+                    return `${field}: ${message}`;
+                  }
+                );
+                errorMessage =
+                  "Validasi gagal:\n" + validationErrors.join("\n");
+              } else {
+                errorMessage =
+                  "Data tidak valid: " +
+                  (error.response.data?.detail ||
+                    "Pastikan semua input sesuai dengan format yang benar");
+              }
+              break;
+            case 500:
+              errorMessage =
+                "Kesalahan server: " +
+                (error.response.data?.detail ||
+                  "Terjadi kesalahan pada server");
+              break;
+            default:
+              errorMessage = error.response.data?.detail || "Terjadi kesalahan";
+          }
+        } else if (error.request) {
+          errorMessage =
+            "Tidak dapat terhubung ke server. Pastikan server berjalan.";
+        }
+
         setResError({
           metode: data.metode || "Tidak Diketahui",
-          message: error.response?.data?.detail || "Terjadi kesalahan",
+          message: errorMessage,
         });
+        setResSucces(null);
       });
   };
 
@@ -309,4 +396,4 @@ const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
   );
 };
 
-export default Turunan;
+export default Integrasi;

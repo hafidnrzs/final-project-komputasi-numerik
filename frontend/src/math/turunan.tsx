@@ -39,12 +39,43 @@ const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
 
   const handleSubmit: FormEventHandler = (e) => {
     e.preventDefault();
-    // const escapedLatex = data.fungsi_latex.replace(/\\\\/g, "\\");
-    // Buat params URLSearchParams
+
+    // Validasi field wajib
+    if (!data.metode) {
+      setResError({
+        metode: "Validation Error",
+        message: "Metode harus dipilih",
+      });
+      return;
+    }
+
+    if (!data.fungsi_latex) {
+      setResError({
+        metode: "Validation Error",
+        message: "Fungsi harus diisi",
+      });
+    }
+
+    if (!data.x) {
+      setResError({
+        metode: "Validation Error",
+        message: "Nilai x harus diisi",
+      });
+      return;
+    }
+
+    if (!data.h_step) {
+      setResError({
+        metode: "Validation Error",
+        message: "Nilai h harus diisi",
+      });
+      return;
+    }
+
     const params = new URLSearchParams();
     params.append("metode", data.metode);
-    params.append("x", data.x); // sudah string, backend akan menerima float
-    params.append("h", data.h_step); // sudah string, backend akan menerima float
+    params.append("x", data.x);
+    params.append("h", data.h_step);
     params.append("fungsi_latex", data.fungsi_latex);
 
     axios
@@ -75,10 +106,49 @@ const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
       })
       .catch((error) => {
         console.error("Error submitting form:", error);
+        let errorMessage = "Terjadi kesalahan pada server";
+
+        if (error.response) {
+          switch (error.response.status) {
+            case 400:
+              errorMessage =
+                "Permintaan tidak valid: " +
+                (error.response.data?.detail ||
+                  "Data yang dikirim tidak sesuai format");
+              break;
+            case 422:
+              // Kelola error validasi
+              if (Array.isArray(error.response.data?.detail)) {
+                const validationErrors = error.response.data.detail.map(
+                  (err: any) => {
+                    const field = err.loc[err.loc.length - 1]; // Ambil elemen terakhir dari array loc
+                    const message = err.msg;
+                    return `${field}: ${message}`;
+                  }
+                );
+                errorMessage =
+                  "Validasi gagal:\n" + validationErrors.join("\n");
+              }
+              break;
+            case 500:
+              errorMessage =
+                "Kesalahan server: " +
+                (error.response.data?.detail ||
+                  "Terjadi kesalahan pada server");
+              break;
+            default:
+              errorMessage = error.response.data?.detail || "Terjadi kesalahan";
+          }
+        } else if (error.request) {
+          errorMessage =
+            "Tidak dapat terhubung ke server. Pastikan server berjalan.";
+        }
+
         setResError({
-          metode: data.metode,
-          message: error.response?.data?.detail || "Terjadi kesalahan",
+          metode: data.metode || "Tidak Diketahui",
+          message: errorMessage,
         });
+        setResSucces(null);
       });
   };
 
