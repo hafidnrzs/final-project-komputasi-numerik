@@ -46,12 +46,12 @@ interface Navbar1Props {
 }
 
 const Navbar1 = ({
-  logo = {
-    url: "/",
-    src: "https://shadcnblocks.com/images/block/logos/shadcnblockscom-icon.svg",
-    alt: "logo",
-    title: "Komputasi Numerik",
-  },
+  // logo = {
+  //   url: "/",
+  //   src: "https://shadcnblocks.com/images/block/logos/shadcnblockscom-icon.svg",
+  //   alt: "logo",
+  //   title: "Komputasi Numerik",
+  // },
   menu = [
     { title: "Home", url: "/" },
     {
@@ -77,12 +77,12 @@ const Navbar1 = ({
         <nav className="hidden justify-between lg:flex">
           <div className="flex items-center gap-6">
             {/* Logo */}
-            <Link to={logo.url} className="flex items-center gap-2">
+            {/*<Link to={logo.url} className="flex items-center gap-2">
               <img src={logo.src} className="max-h-8" alt={logo.alt} />
               <span className="text-lg font-semibold tracking-tighter">
                 {logo.title}
               </span>
-            </Link>
+            </Link>*/}
             <div className="flex items-center">
               <NavigationMenu>
                 <NavigationMenuList>
@@ -92,11 +92,10 @@ const Navbar1 = ({
                       <NavigationMenuItem key={item.title}>
                         <Link to={item.url}>
                           <NavigationMenuLink
-                            className={`group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-accent-foreground ${
-                              active
-                                ? "bg-muted text-accent-foreground"
-                                : "text-muted-foreground"
-                            }`}
+                            className={`group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-accent-foreground ${active
+                              ? "bg-muted text-accent-foreground"
+                              : "text-muted-foreground"
+                              }`}
                           >
                             {item.title}
                           </NavigationMenuLink>
@@ -114,9 +113,9 @@ const Navbar1 = ({
         <div className="block lg:hidden">
           <div className="flex items-center gap-x-2 justify-between">
             {/* Logo */}
-            <Link to={logo.url} className="flex items-center gap-2">
+            {/* <Link to={logo.url} className="flex items-center gap-2">
               <img src={logo.src} className="max-h-8" alt={logo.alt} />
-            </Link>
+            </Link> */}
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="outline" size="icon">
@@ -126,9 +125,9 @@ const Navbar1 = ({
               <SheetContent className="overflow-y-auto">
                 <SheetHeader>
                   <SheetTitle>
-                    <Link to={logo.url} className="flex items-center gap-2">
+                    {/* <Link to={logo.url} className="flex items-center gap-2">
                       <img src={logo.src} className="max-h-8" alt={logo.alt} />
-                    </Link>
+                    </Link> */}
                   </SheetTitle>
                 </SheetHeader>
                 <div className="flex flex-col gap-6 p-4">
@@ -143,9 +142,8 @@ const Navbar1 = ({
                         <Link
                           key={item.title}
                           to={item.url}
-                          className={`text-md font-semibold ${
-                            active ? "text-primary" : ""
-                          }`}
+                          className={`text-md font-semibold ${active ? "text-primary" : ""
+                            }`}
                         >
                           {item.title}
                         </Link>
