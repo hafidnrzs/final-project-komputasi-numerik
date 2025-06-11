@@ -120,6 +120,7 @@ const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
               // Kelola error validasi
               if (Array.isArray(error.response.data?.detail)) {
                 const validationErrors = error.response.data.detail.map(
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   (err: any) => {
                     const field = err.loc[err.loc.length - 1]; // Ambil elemen terakhir dari array loc
                     const message = err.msg;
