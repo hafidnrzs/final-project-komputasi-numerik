@@ -30,7 +30,8 @@ def turunan_analitik(fungsi_str: str, nilai_x: float):
             return round(float(hasil_analitik.evalf()), 3), turunan_latex
         return (round(float(hasil_analitik), 3)), turunan_latex
     except Exception as e:
-        raise ValueError(f"Gagal menghitung turunan analitik: {str(e)}")
+        print("Gagal menghitung turunan analitik:", e)
+        raise ValueError("Gagal menghitung turunan analitik")
 
 
 def selisih_maju(fungsi_str: str, x: float, h: float, np_alias=np):
@@ -48,6 +49,16 @@ def selisih_maju(fungsi_str: str, x: float, h: float, np_alias=np):
     result = (
         eval_func(fungsi_str, x + h, np_alias) - eval_func(fungsi_str, x, np_alias)
     ) / h
+    # Kondisi jika floating point terlalu kecil
+    if round(result, 3) == -0.0:
+        result = 0.0
+
+    print("\n--- Turunan (Metode Selisih Maju) ---")
+    print(f"f(x) = {fungsi_str}")
+    print(f"x = {x}")
+    print(f"h = {h}")
+    print("\nHasil numerik = ", round(result, 3))
+
     return round(result, 3)
 
 
@@ -66,6 +77,15 @@ def selisih_tengahan(fungsi_str: str, x: float, h: float, np_alias=np):
     result = (
         eval_func(fungsi_str, x + h, np_alias) - eval_func(fungsi_str, x - h, np_alias)
     ) / (2 * h)
+    # Kondisi jika floating point terlalu kecil
+    if round(result, 3) == -0.0:
+        result = 0.0
+
+    print("\n--- Turunan (Metode Selisih Tengahan) ---")
+    print(f"f(x) = {fungsi_str}")
+    print(f"x = {x}")
+    print(f"h = {h}")
+    print("\nHasil numerik = ", round(result, 3))
     return round(result, 3)
 
 
@@ -84,4 +104,13 @@ def selisih_mundur(fungsi_str: str, x: float, h: float, np_alias=np):
     result = (
         eval_func(fungsi_str, x, np_alias) - eval_func(fungsi_str, x - h, np_alias)
     ) / h
+    # Kondisi jika floating point terlalu kecil
+    if result == -0.0:
+        result = 0.0
+
+    print("\n--- Turunan (Metode Selisih Mundur) ---")
+    print(f"f(x) = {fungsi_str}")
+    print(f"x = {x}")
+    print(f"h = {h}")
+    print("\nHasil numerik = ", round(result, 3))
     return round(result, 3)

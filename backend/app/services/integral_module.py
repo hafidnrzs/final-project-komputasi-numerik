@@ -54,15 +54,25 @@ def riemann_integral(
     Raises:
         ValueError: Jika h adalah nol atau evaluasi fungsi gagal
     """
+    print("\n--- Integrasi (Metode Riemann) ---")
+    print(f"f(x) = {fungsi_str}")
     if h == 0:
         raise ValueError("Ukuran langkah (h) tidak boleh nol.")
+    print(f"h = {h}")
+    print(f"batas atas = {batas_atas}")
+    print(f"batas bawah = {batas_bawah}\n")
 
-    i = batas_bawah
-    iter_result = 0
-    while i <= batas_atas:
-        iter_result += eval_func(fungsi_str, i, np_alias)
-        i += h
-    result = h * iter_result
+    x = batas_bawah
+    i = 0
+    sum_iteration = 0
+    while x <= batas_atas:
+        f_i = eval_func(fungsi_str, x, np_alias)
+        print(f"f_{i}({x}) = {f_i}")
+        sum_iteration += f_i
+        i += 1
+        x += h
+    result = h * sum_iteration
+    print(f"Hasil numerik: {round(result, 3)}")
 
     return round(result, 3)
 
@@ -85,24 +95,37 @@ def trapezoida_integral(
     Raises:
         ValueError: Jika h adalah nol atau evaluasi fungsi gagal
     """
+    print("\n--- Integrasi (Metode Trapezoida) ---")
+    print(f"f(x) = {fungsi_str}")
+    print(f"N = {N}")
     h = hitung_h(batas_bawah, batas_atas, N)
     if h == 0:
         raise ValueError("Ukuran langkah (h) tidak boleh nol.")
+    print(f"h = {h}")
+    print(f"batas atas = {batas_atas}")
+    print(f"batas bawah = {batas_bawah}")
 
     # x_0 = batas bawah
     x = batas_bawah
     f_0 = eval_func(fungsi_str, batas_bawah, np_alias)
+    print(f"\nf_0({batas_bawah}) = {f_0}")
     # x_n = batas atas
     f_n = eval_func(fungsi_str, batas_atas, np_alias)
 
-    iter_result = 0
+    sum_iteration = 0
     for i in range(1, N):
         # x_1 = x_0 + h
         # x_2 = x_1 + h
         # ...
         x += h
-        iter_result += eval_func(fungsi_str, x)
-    result = h / 2 * (f_0 + 2 * iter_result + f_n)
+        f_i = eval_func(fungsi_str, x)
+        print(f"f_{i}({x}) = {f_i}")
+        sum_iteration += f_i
+
+    print(f"f_{N}({batas_atas}) = {f_n}")
+
+    result = h / 2 * (f_0 + 2 * sum_iteration + f_n)
+    print(f"Hasil numerik: {round(result, 3)}")
 
     return round(result, 3)
 
@@ -126,26 +149,39 @@ def simpson_integral(
         ValueError: Jika h adalah nol atau evaluasi fungsi gagal
 
     """
+    print("\n--- Integrasi (Metode Simpson) ---")
+    print(f"f(x) = {fungsi_str}")
+    print(f"N = {N}")
     h = hitung_h(batas_bawah, batas_atas, N)
     if h == 0:
         raise ValueError("Ukuran langkah (h) tidak boleh nol.")
+    print(f"h = {h}")
+    print(f"batas atas = {batas_atas}")
+    print(f"batas bawah = {batas_bawah}")
 
     # x_0 = batas bawah
     x = batas_bawah
     f_0 = eval_func(fungsi_str, batas_bawah, np_alias)
+    print(f"\nf_0({batas_bawah}) = {f_0}")
     # x_n = batas atas
     f_n = eval_func(fungsi_str, batas_atas, np_alias)
 
-    iter_result = 0
+    sum_iteration = 0
     for i in range(1, N):
         # x_1 = x_0 + h
         # x_2 = x_1 + h
         # ...
         x += h
+        f_i = eval_func(fungsi_str, x)
+        print(f"f_{i}({x}) = {f_i}")
         if i % 2 == 0:  # jika i genap
-            iter_result += 2 * eval_func(fungsi_str, x)
+            sum_iteration += 2 * f_i
         else:  # jika i ganjil
-            iter_result += 4 * eval_func(fungsi_str, x)
-    result = h / 3 * (f_0 + iter_result + f_n)
+            sum_iteration += 4 * f_i
+
+    print(f"f_{N}({batas_atas}) = {f_n}")
+
+    result = h / 3 * (f_0 + sum_iteration + f_n)
+    print(f"Hasil numerik: {round(result, 3)}")
 
     return round(result, 3)

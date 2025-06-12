@@ -86,7 +86,8 @@ const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
       })
       .then((response) => {
         console.log("Response data:", response.data);
-        if (response.data.hasil_analitik) {
+        if (response.data.hasil_analitik != null) {
+          console.log("Response success")
           setResSucces({
             input_fungsi: response.data.input_fungsi,
             turunan_fungsi: response.data.turunan_fungsi,
@@ -102,6 +103,8 @@ const Turunan = (props: React.HTMLAttributes<HTMLDivElement>) => {
             metode: response.data.metode,
             message: response.data.message,
           });
+        } else {
+          console.log("Response failed")
         }
       })
       .catch((error) => {
