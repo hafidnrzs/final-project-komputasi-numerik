@@ -126,6 +126,8 @@ async def solve_integral_form(
                 fungsi_python, batas_bawah, batas_atas
             )
             error_relatif = hitung_error(hasil_numerik, hasil_analitik)
+            print(f"Hasil analitik: {hasil_analitik}")
+            print(f"Error: {error_relatif}")
         except ValueError as ve_analitik:
             raise HTTPException(
                 status_code=400,
@@ -151,5 +153,6 @@ async def solve_integral_form(
         raise HTTPException(status_code=400, detail=str(ve))
     except HTTPException:
         raise
-    except Exception:
+    except Exception as e:
+        print("Terjadi error:", e)
         raise HTTPException(status_code=500, detail="Terjadi kesalahan di server.")
