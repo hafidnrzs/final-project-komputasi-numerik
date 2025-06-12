@@ -100,8 +100,12 @@ def hitung_error_persen(hasil_numerik, hasil_analitik):
     Returns:
         float: Nilai error dalam persen
     """
-    hasil_error = abs((hasil_numerik - hasil_analitik) / hasil_analitik)
+    if hasil_analitik == 0:
+        hasil_error = abs(hasil_numerik)
+    else:
+        hasil_error = abs((hasil_numerik - hasil_analitik) / hasil_analitik)
     error_persen = hasil_error * 100
+
     return round(error_persen, 3)
 
 

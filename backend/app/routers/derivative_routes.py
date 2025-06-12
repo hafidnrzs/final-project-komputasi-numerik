@@ -55,7 +55,6 @@ async def solve_derivative_form(
             status_code=400, detail=f"Gagal mem-parsing fungsi LaTeX: {str(e)}"
         )
     hasil_numerik = 0.0
-
     # Pemilihan metode dan perhitungan
     try:
         if metode == "selisih-maju":
@@ -69,11 +68,12 @@ async def solve_derivative_form(
                 status_code=400,
                 detail=f"Metode '{metode}' tidak valid. Gunakan 'selisih-maju', 'selisih-tengahan', atau 'selisih-mundur'.",
             )
-
         # Hitung metode analitik dan cari error
         try:
             hasil_analitik, turunan_fungsi_latex = turunan_analitik(fungsi_python, x)
             error_relatif = hitung_error_persen(hasil_numerik, hasil_analitik)
+            print(f"Hasil analitik =  {hasil_analitik}")
+            print(f"Error = {error_relatif}%")
         except ValueError as ve_analitik:
             raise HTTPException(
                 status_code=400,
@@ -92,7 +92,9 @@ async def solve_derivative_form(
         )
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve))
-    except HTTPException:
+    except HTTPException as e:
+        print("Error:", e)
         raise HTTPException(status_code=400)
-    except Exception:
+    except Exception as e:
+        print("Terjadi error:", e)
         raise HTTPException(status_code=500, detail="Terjadi kesalahan di server.")
