@@ -70,7 +70,7 @@ cd frontend
 2. Install dependencies
 
 ```bash
-npm install
+npm install --legacy-peer-deps
 ```
 
 3. Jalankan aplikasi dalam mode development
@@ -107,5 +107,5 @@ http://127.0.0.1:8000/docs
 ## Persyaratan Sistem
 
 - Python 3.8 - 3.11 (untuk backend)
-- Node.js (untuk frontend)
+- Node.js 20. - 22. (untuk frontend)
 - Browser modern dengan dukungan JavaScript

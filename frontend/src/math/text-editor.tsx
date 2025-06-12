@@ -34,7 +34,10 @@ const MathInput = ({
   // Filter untuk hanya mengizinkan pecahan dan pangkat
   const filterMathInput = (latexStr: string) => {
     // Hanya izinkan karakter tertentu: angka, huruf, +, -, *, /, (, ), ^, \, {, }
-    const filtered = latexStr.replace(/[^0-9a-zA-Z\+\-\*\/\(\)\^\{\}\\=]/g, "");
+    const filtered = latexStr.replace(
+      /[^0-9a-zA-Z\+\-\*\/\(\)\^\{\}\\=\.\,]/g,
+      ""
+    );
 
     // Validasi struktur dasar pecahan dan pangkat
     const hasValidFractions = filtered.split("\\frac").length <= 3; // Maksimal 2 pecahan
